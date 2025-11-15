@@ -9,7 +9,7 @@ import CreateAccountModal from './CreateAccountModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import { fakeCreatorAccounts } from '../../data/fakeCreatorData';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
-
+import VerifyPasswordView from '../common/VerifyPasswordView';
 // --- Vista de Cuentas (Accounts) ---
 const AccountsView = ({
                           accounts,
@@ -154,13 +154,7 @@ const CreatorDashboard = (props) => {
                     />
                 );
             case 'security':
-                return (
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-light-text dark:text-dark-text">
-                            Security Settings (Próximamente)
-                        </h2>
-                    </div>
-                );
+                return <VerifyPasswordView />;
             case 'chatbot':
                 return <ChatbotView />;
             default:
