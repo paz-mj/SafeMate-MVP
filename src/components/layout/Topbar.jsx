@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { LuSun, LuMoon, LuBell, LuUser, LuSettings, LuLogOut } from 'react-icons/lu';
 import { fakeNotifications } from '../../data/fakeData';
 
-const Topbar = ({ viewTitle, isDark, toggleDarkMode, handleLogout }) => {
+const Topbar = ({ viewTitle, isDark, toggleDarkMode, handleLogout, onViewAllNotificationsClick }) => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const notifRef = useRef(null);
@@ -23,6 +23,11 @@ const Topbar = ({ viewTitle, isDark, toggleDarkMode, handleLogout }) => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    const handleViewAllClick = () => {
+        setShowNotifications(false); // Cerrar el dropdown
+        onViewAllNotificationsClick(); // Llamar al handler del padre
+    };
 
     return (
         <header className="bg-light-background dark:bg-dark-surface border-b border-gray-200 dark:border-gray-700 px-6 py-4">
@@ -65,7 +70,7 @@ const Topbar = ({ viewTitle, isDark, toggleDarkMode, handleLogout }) => {
                                     <h3 className="font-semibold text-gray-900 dark:text-white">Notificaciones</h3>
                                 </div>
                                 <div className="max-h-96 overflow-y-auto">
-                                    {fakeNotifications.map((notif) => (
+                                    {fakeNotifications.slice(0, 3).map((notif) => (
                                         <div
                                             key={notif.id}
                                             className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
@@ -85,7 +90,10 @@ const Topbar = ({ viewTitle, isDark, toggleDarkMode, handleLogout }) => {
                                     ))}
                                 </div>
                                 <div className="p-3 text-center border-t border-gray-200 dark:border-gray-700">
-                                    <button className="text-sm text-brand hover:text-brand/80 font-medium">
+                                    <button
+                                        onClick={handleViewAllClick}
+                                        className="text-sm text-brand hover:text-brand/80 font-medium"
+                                    >
                                         Ver todas las notificaciones
                                     </button>
                                 </div>

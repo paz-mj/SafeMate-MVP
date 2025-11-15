@@ -1,31 +1,26 @@
 // src/components/layout/Sidebar.jsx
-import { FiShield, FiUsers, FiMessageSquare, FiLogOut, FiSearch, FiHome, FiCheckSquare } from 'react-icons/fi';
+import { FiShield, FiUsers, FiMessageSquare, FiLogOut, FiHome } from 'react-icons/fi';
 
-// Recibimos 'currentView' y 'onNavigate' desde el Dashboard padre
 const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) => {
-
-    // Configuración de navegación corregida
+    // Configuración de navegación según el rol
     const navigationConfig = {
         admin: [
             { name: 'Gestión de Cuentas', icon: FiUsers, view: 'admin_accounts' },
-            { name: 'Verificar Contraseña', icon: FiSearch, view: 'verify' },
             { name: 'Asistente Chatbot', icon: FiMessageSquare, view: 'chatbot' }
         ],
         empleado: [
             { name: 'Mi Dashboard', icon: FiShield, view: 'empleado_dashboard' },
-            { name: 'Comprobación de Seguridad', icon: FiCheckSquare, view: 'verify' },
             { name: 'Asistente Chatbot', icon: FiMessageSquare, view: 'chatbot' }
         ],
         creator: [
-            // ESTA ES LA NAVEGACIÓN CORREGIDA PARA EL CREADOR
             { name: 'Accounts', icon: FiHome, view: 'accounts' },
-            { name: 'Security', icon: FiSearch, view: 'security' },
+            { name: 'Security', icon: FiShield, view: 'security' },
             { name: 'Asistente Chatbot', icon: FiMessageSquare, view: 'chatbot' }
         ]
     };
 
     const navItems = navigationConfig[userRole] || navigationConfig.admin;
-    const defaultView = navItems[0].view; // Vista por defecto si 'currentView' no se pasa
+    const defaultView = navItems[0].view;
 
     return (
         <aside className="w-64 bg-gray-900 text-white h-screen flex flex-col flex-shrink-0">
@@ -47,17 +42,16 @@ const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) 
                 <ul className="space-y-2">
                     {navItems.map((item) => {
                         const Icon = item.icon;
-                        // Comprueba si este item es el activo
                         const isActive = (currentView || defaultView) === item.view;
 
                         return (
                             <li key={item.name}>
                                 <button
-                                    onClick={() => onNavigate(item.view)} // Llama a la función del padre
+                                    onClick={() => onNavigate(item.view)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                                         isActive
-                                            ? 'bg-brand text-white' // Activo
-                                            : 'text-gray-300 hover:bg-gray-800 hover:text-white' // Inactivo
+                                            ? 'bg-brand text-white'
+                                            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                                     }`}
                                 >
                                     <Icon className="w-5 h-5" />

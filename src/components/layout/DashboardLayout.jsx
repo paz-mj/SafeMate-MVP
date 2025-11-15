@@ -1,31 +1,35 @@
-// src/components/layout/DashboardLayout.jsx
+// src/components/layout/DashboardLayout.jsx}
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
-
 const DashboardLayout = ({
                              children,
                              viewTitle,
                              handleLogout,
                              isDark,
                              toggleDarkMode,
-                             userRole = 'admin'
+                             userRole = 'admin',
+                             currentView,
+                             onNavigate,
+                             onViewAllNotificationsClick
                          }) => {
     return (
         <div className="flex h-screen overflow-hidden bg-light-background dark:bg-dark-background">
-            {/* Sidebar */}
-            <Sidebar handleLogout={handleLogout} userRole={userRole} />
+            <Sidebar
+                handleLogout={handleLogout}
+                userRole={userRole}
+                currentView={currentView}
+                onNavigate={onNavigate}
+            />
 
-            {/* Main Content */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Topbar */}
                 <Topbar
                     viewTitle={viewTitle}
                     isDark={isDark}
                     toggleDarkMode={toggleDarkMode}
                     handleLogout={handleLogout}
+                    onViewAllNotificationsClick={onViewAllNotificationsClick}
                 />
 
-                {/* Content Area */}
                 <main className="flex-1 overflow-y-auto">
                     {children}
                 </main>
@@ -33,5 +37,4 @@ const DashboardLayout = ({
         </div>
     );
 };
-
 export default DashboardLayout;
