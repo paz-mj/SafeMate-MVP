@@ -1,164 +1,179 @@
-// src/views/creator/CreatorDashboard.jsx
+// src/views/creator/CreatorDashboard.jsx - REFACTORIZADO COMPLETO
 import { useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import NotificationsModal from '../common/NotificationsModal'; // ⭐ AGREGADO
-import { fakeCreatorAccounts } from '../../data/fakeCreatorData';
-import VerifyPasswordView from '../common/VerifyPasswordView';
+import NotificationsModal from '../common/NotificationsModal';
 import ChatbotView from '../common/ChatbotView';
-import {
-    FiCheckCircle,
-    FiAlertTriangle,
-    FiXCircle,
-    FiChevronDown
-} from 'react-icons/fi';
+import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
+import AccountCard from './AccountCard';
+import CreateAccountModal from './CreateAccountModal';
+import DeleteConfirmModal from './DeleteConfirmModal';
+import { fakeCreatorAccounts } from '../../data/fakeCreatorData';
+import { FiPlus, FiTrash2 } from 'react-icons/fi';
 
-// --- Sub-componente: El Grid de Cuentas ---
-const AccountsGrid = ({ onAccountClick }) => {
-    const getStatusDisplay = (status, color) => {
-        let Icon;
-        let textColor = color === 'green' ? 'text-alert-green' : color === 'yellow' ? 'text-alert-yellow' : 'text-alert-red';
-        if (color === 'green') Icon = FiCheckCircle;
-        else if (color === 'yellow') Icon = FiAlertTriangle;
-        else Icon = FiXCircle;
-        return (
-            <div className={`flex items-center gap-1.5 ${textColor}`}>
-                <Icon className="w-4 h-4" />
-                <span className="text-sm font-medium">{status}</span>
-            </div>
-        );
-    };
-
+// --- Vista de Cuentas (Accounts) ---
+const AccountsView = ({
+                          accounts,
+                          onUpdatePassword,
+                          onDeleteAccount,
+                          isDeleteMode,
+                          onToggleDeleteMode,
+                          onCreateAccount
+                      }) => {
     return (
         <div className="p-6">
+            {/* Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-light-text dark:text-dark-text mb-2">
-                    Pinned Accounts
-                </h1>
+                <div className="flex items-center justify-between mb-2">
+                    <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">
+                        Pinned Accounts
+                    </h1>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={onToggleDeleteMode}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${
+                                isDeleteMode
+                                    ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/30'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            }`}
+                        >
+                            <FiTrash2 className="w-5 h-5" />
+                            {isDeleteMode ? 'Cancelar' : 'Eliminar Cuentas'}
+                        </button>
+                        <button
+                            onClick={onCreateAccount}
+                            className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium"
+                        >
+                            <FiPlus className="w-5 h-5" />
+                            Agregar Red Social
+                        </button>
+                    </div>
+                </div>
                 <p className="text-light-textSecondary dark:text-dark-textSecondary">
                     Monitor and manage your connected social media accounts.
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {fakeCreatorAccounts.map((account) => {
-                    const Icon = account.icon;
-                    return (
-                        <div
-                            key={account.id}
-                            className="bg-light-surface dark:bg-dark-surface p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
-                        >
-                            <div className="flex justify-between items-start">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-gray-100 dark:bg-gray-900 rounded-lg">
-                                        <Icon className="w-6 h-6 text-brand" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-light-text dark:text-dark-text">
-                                            {account.platform}
-                                        </h3>
-                                        {getStatusDisplay(account.status, account.color)}
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => onAccountClick(account)}
-                                    className="text-light-textSecondary dark:text-dark-textSecondary"
-                                >
-                                    <FiChevronDown className="w-5 h-5" />
-                                </button>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-};
-
-// --- Sub-componente: El Modal (Pop-up) ---
-const AccountModal = ({ account, onClose }) => {
-    const AccountIcon = account.icon;
-
-    const renderStandardView = () => (
-        <>
-            <h3 className="text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary">Nombre de Usuario</h3>
-            <p className="mb-4 text-light-text dark:text-dark-text">{account.username}</p>
-
-            <h3 className="text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary">Email Asociado</h3>
-            <p className="mb-6 text-light-text dark:text-dark-text">{account.email}</p>
-
-            <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3">Verificaciones de Seguridad</h3>
-            <ul className="space-y-3">
-                {account.securityChecks.map((check) => (
-                    <li key={check.name} className="flex items-center gap-3">
-                        {check.enabled
-                            ? <FiCheckCircle className="w-5 h-5 text-alert-green" />
-                            : <FiXCircle className="w-5 h-5 text-alert-red" />
-                        }
-                        <span className="text-light-text dark:text-dark-text">{check.name}</span>
-                    </li>
-                ))}
-            </ul>
-        </>
-    );
-
-    const renderGmailView = () => (
-        <ul className="space-y-3">
-            {account.associatedEmails.map((item) => (
-                <li key={item.email} className="p-3 bg-light-background dark:bg-dark-background rounded-lg">
-                    <p className="font-semibold text-light-text dark:text-dark-text">{item.email}</p>
-                    <div className="flex items-center gap-3 mt-2 text-light-textSecondary dark:text-dark-textSecondary">
-                        {item.platforms.length > 4 ? (
-                            <span className="text-sm">Plataformas Múltiples</span>
-                        ) : (
-                            item.platforms.map((Icon, index) => {
-                                const PlatformIcon = Icon;
-                                return <PlatformIcon key={index} className="w-5 h-5" />;
-                            })
-                        )}
+            {/* Mensaje cuando no hay cuentas */}
+            {accounts.length === 0 ? (
+                <div className="text-center py-16">
+                    <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FiPlus className="w-10 h-10 text-gray-400" />
                     </div>
-                </li>
-            ))}
-        </ul>
-    );
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div
-                className="w-full max-w-lg p-6 bg-light-surface dark:bg-dark-surface rounded-lg shadow-xl m-4"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center gap-3">
-                        <AccountIcon className="w-6 h-6 text-brand" />
-                        <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">{account.platform}</h2>
-                    </div>
-                    <button onClick={onClose} className="p-1 rounded-full text-light-textSecondary dark:text-dark-textSecondary hover:bg-gray-100 dark:hover:bg-gray-700 text-2xl">
-                        &times;
+                    <h3 className="text-xl font-semibold text-light-text dark:text-dark-text mb-2">
+                        No hay cuentas agregadas
+                    </h3>
+                    <p className="text-light-textSecondary dark:text-dark-textSecondary mb-6">
+                        Comienza agregando tu primera red social
+                    </p>
+                    <button
+                        onClick={onCreateAccount}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium"
+                    >
+                        <FiPlus className="w-5 h-5" />
+                        Agregar Primera Cuenta
                     </button>
                 </div>
-
-                {account.platform === 'Gmail' ? renderGmailView() : renderStandardView()}
-            </div>
+            ) : (
+                /* Grid de Cuentas */
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {accounts.map((account) => (
+                        <AccountCard
+                            key={account.id}
+                            account={account}
+                            onUpdate={onUpdatePassword}
+                            onDelete={onDeleteAccount}
+                            isDeleteMode={isDeleteMode}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
 
-// --- Componente Principal del Dashboard del Creador ---
+// --- Componente Principal ---
 const CreatorDashboard = (props) => {
+    // Estados principales
     const [currentView, setCurrentView] = useState('accounts');
-    const [selectedAccount, setSelectedAccount] = useState(null);
-    const [showAllNotifications, setShowAllNotifications] = useState(false); // ⭐ AGREGADO
+    const [showAllNotifications, setShowAllNotifications] = useState(false);
+    const [accounts, setAccounts] = useState(fakeCreatorAccounts);
+    const [isDeleteMode, setIsDeleteMode] = useState(false);
 
+    // Estados de modales
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showPasswordGenerator, setShowPasswordGenerator] = useState(false);
+    const [selectedAccountId, setSelectedAccountId] = useState(null);
+    const [accountToDelete, setAccountToDelete] = useState(null);
+
+    // ✅ Crear nueva cuenta
+    const handleCreateAccount = (newAccount) => {
+        setAccounts([...accounts, newAccount]);
+        setShowCreateModal(false);
+    };
+
+    // ✅ Eliminar cuenta
+    const handleDeleteAccount = (accountId) => {
+        const account = accounts.find(a => a.id === accountId);
+        setAccountToDelete(account);
+    };
+
+    const confirmDelete = () => {
+        setAccounts(accounts.filter(a => a.id !== accountToDelete.id));
+        setAccountToDelete(null);
+        setIsDeleteMode(false);
+    };
+
+    // ✅ Actualizar contraseña
+    const handleUpdatePassword = (accountId) => {
+        setSelectedAccountId(accountId);
+        setShowPasswordGenerator(true);
+    };
+
+    const handlePasswordGenerated = (newPassword) => {
+        setAccounts(accounts.map(account =>
+            account.id === selectedAccountId
+                ? { ...account, password: newPassword }
+                : account
+        ));
+        setShowPasswordGenerator(false);
+        setSelectedAccountId(null);
+    };
+
+    // ✅ Renderizar vista actual
     const renderView = () => {
         switch (currentView) {
             case 'accounts':
-                return <AccountsGrid onAccountClick={setSelectedAccount} />;
+                return (
+                    <AccountsView
+                        accounts={accounts}
+                        onUpdatePassword={handleUpdatePassword}
+                        onDeleteAccount={handleDeleteAccount}
+                        isDeleteMode={isDeleteMode}
+                        onToggleDeleteMode={() => setIsDeleteMode(!isDeleteMode)}
+                        onCreateAccount={() => setShowCreateModal(true)}
+                    />
+                );
             case 'security':
-                return <VerifyPasswordView />;
+                return (
+                    <div className="p-6">
+                        <h2 className="text-2xl font-bold text-light-text dark:text-dark-text">
+                            Security Settings (Próximamente)
+                        </h2>
+                    </div>
+                );
             case 'chatbot':
                 return <ChatbotView />;
             default:
-                return <AccountsGrid onAccountClick={setSelectedAccount} />;
+                return (
+                    <AccountsView
+                        accounts={accounts}
+                        onUpdatePassword={handleUpdatePassword}
+                        onDeleteAccount={handleDeleteAccount}
+                        isDeleteMode={isDeleteMode}
+                        onToggleDeleteMode={() => setIsDeleteMode(!isDeleteMode)}
+                        onCreateAccount={() => setShowCreateModal(true)}
+                    />
+                );
         }
     };
 
@@ -179,25 +194,44 @@ const CreatorDashboard = (props) => {
         <>
             <DashboardLayout
                 {...props}
-                viewTitle={getViewTitle()} // ⭐ AGREGADO
+                viewTitle={getViewTitle()}
                 userRole="creator"
                 currentView={currentView}
                 onNavigate={setCurrentView}
-                onViewAllNotificationsClick={() => setShowAllNotifications(true)} // ⭐ AGREGADO
+                onViewAllNotificationsClick={() => setShowAllNotifications(true)}
             >
                 {renderView()}
-
-                {selectedAccount && (
-                    <AccountModal
-                        account={selectedAccount}
-                        onClose={() => setSelectedAccount(null)}
-                    />
-                )}
             </DashboardLayout>
 
-            {/* ⭐ Modal de Notificaciones - AGREGADO */}
+            {/* Modales */}
             {showAllNotifications && (
                 <NotificationsModal onClose={() => setShowAllNotifications(false)} />
+            )}
+
+            {showCreateModal && (
+                <CreateAccountModal
+                    onClose={() => setShowCreateModal(false)}
+                    onCreateAccount={handleCreateAccount}
+                    existingPlatforms={accounts.map(a => a.platform)}
+                />
+            )}
+
+            {showPasswordGenerator && (
+                <PasswordGeneratorModal
+                    onClose={() => {
+                        setShowPasswordGenerator(false);
+                        setSelectedAccountId(null);
+                    }}
+                    onPasswordGenerated={handlePasswordGenerated}
+                />
+            )}
+
+            {accountToDelete && (
+                <DeleteConfirmModal
+                    account={accountToDelete}
+                    onConfirm={confirmDelete}
+                    onCancel={() => setAccountToDelete(null)}
+                />
             )}
         </>
     );

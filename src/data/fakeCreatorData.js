@@ -1,6 +1,7 @@
-// src/data/fakeCreatorData.js
-import { FiInstagram, FiMusic, FiYoutube, FiMail, FiSlack, FiFigma } from 'react-icons/fi';
+// src/data/fakeCreatorData.js - VERSIÓN ACTUALIZADA
+import { FiInstagram, FiMusic, FiYoutube, FiMail, FiSlack, FiFigma, FiLinkedin, FiTwitter } from 'react-icons/fi';
 
+// ✅ Estructura mejorada con contraseñas
 export const fakeCreatorAccounts = [
     {
         id: 1,
@@ -8,6 +9,7 @@ export const fakeCreatorAccounts = [
         icon: FiInstagram,
         username: '@safe_creator',
         email: 'creator.pro@gmail.com',
+        password: 'Inst@gr4mS3cur3!2024',
         status: 'Secure',
         color: 'green',
         securityChecks: [
@@ -19,9 +21,10 @@ export const fakeCreatorAccounts = [
     {
         id: 2,
         platform: 'TikTok',
-        icon: FiMusic, // Proxy para TikTok
+        icon: FiMusic,
         username: '@safe_creator_tok',
         email: 'creator.pro@gmail.com',
+        password: 'T1kT0k!Secur3#2024',
         status: 'Warning',
         color: 'yellow',
         securityChecks: [
@@ -36,6 +39,7 @@ export const fakeCreatorAccounts = [
         icon: FiYoutube,
         username: 'SafeCreator Channel',
         email: 'business.creator@gmail.com',
+        password: 'Y0uTub3$Str0ng!Pass',
         status: 'Secure',
         color: 'green',
         securityChecks: [
@@ -44,26 +48,16 @@ export const fakeCreatorAccounts = [
             { name: 'Correo de recuperación actualizado', enabled: true },
         ],
     },
-    {
-        id: 4,
-        platform: 'Gmail',
-        icon: FiMail,
-        status: 'Critical',
-        color: 'red',
-        // Datos especiales para la vista de Gmail
-        associatedEmails: [
-            {
-                email: 'creator.pro@gmail.com',
-                platforms: [FiInstagram, FiMusic], // Asociado a IG y TikTok
-            },
-            {
-                email: 'business.creator@gmail.com',
-                platforms: [FiYoutube], // Asociado a YouTube
-            },
-            {
-                email: 'personal.creator@gmail.com',
-                platforms: [FiSlack, FiFigma, FiMail, FiInstagram, FiYoutube], // "Plataformas Múltiples"
-            },
-        ]
-    },
+];
+
+// ✅ Plataformas disponibles para crear nuevas cuentas
+export const availablePlatforms = [
+    { name: 'Instagram', icon: FiInstagram },
+    { name: 'TikTok', icon: FiMusic },
+    { name: 'YouTube', icon: FiYoutube },
+    { name: 'Twitter', icon: FiTwitter },
+    { name: 'LinkedIn', icon: FiLinkedin },
+    { name: 'Figma', icon: FiFigma },
+    { name: 'Slack', icon: FiSlack },
+    { name: 'Gmail', icon: FiMail },
 ];
