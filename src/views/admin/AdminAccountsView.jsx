@@ -16,12 +16,13 @@ import {
 import { fakeUsers, fakeLogs } from '../../data/fakeData';
 import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
 
-const AdminAccountsView = () => {
+const AdminAccountsView = ({ whitelist }) => {
     // Estados principales
     const [users, setUsers] = useState(fakeUsers);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(null);
     const [showLogsModal, setShowLogsModal] = useState(false);
+    // (Línea duplicada eliminada)
     const [showPasswordModal, setShowPasswordModal] = useState(null);
     const [showPasswordGenerator, setShowPasswordGenerator] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
@@ -38,7 +39,7 @@ const AdminAccountsView = () => {
     const [passwordToCheck, setPasswordToCheck] = useState('');
     const [checkResult, setCheckResult] = useState(null);
 
-    // Funciones CRUD
+    // Funciones CRUD (Sin cambios)
     const handleCreateUser = (e) => {
         e.preventDefault();
 
@@ -93,7 +94,7 @@ const AdminAccountsView = () => {
         setShowCreateModal(true);
     };
 
-    // Modal de contraseña
+    // Modal de contraseña (Sin cambios)
     const [showPassword, setShowPassword] = useState(false);
     const [copiedPassword, setCopiedPassword] = useState(false);
 
@@ -122,7 +123,7 @@ const AdminAccountsView = () => {
         }
     };
 
-    // Verificación de contraseña filtrada
+    // Verificación de contraseña filtrada (Sin cambios)
     const handleCheckPassword = () => {
         if (!passwordToCheck) {
             alert('Por favor ingresa una contraseña');
@@ -140,6 +141,18 @@ const AdminAccountsView = () => {
         });
     };
 
+    // --- (Función para los LOGS, usa la 'whitelist') ---
+    const getLogStatusInfo = (log) => {
+        if (log.status === 'red') {
+            return { icon: '🚨', text: 'Peligroso', color: 'text-alert-red' };
+        }
+        if (whitelist.includes(log.site)) {
+            return { icon: '🛡️', text: 'Verificado (Whitelist)', color: 'text-alert-green' };
+        }
+        return { icon: '⚠️', text: 'No Verificado', color: 'text-alert-yellow' };
+    };
+
+    // --- (Función para la TABLA DE USUARIOS) ---
     const getStatusIcon = (status) => {
         const icons = {
             green: { icon: '🛡️', text: 'Seguro', color: 'text-alert-green' },
@@ -149,16 +162,17 @@ const AdminAccountsView = () => {
         return icons[status] || icons.green;
     };
 
+
     return (
         <div className="p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">
                     Lista de Usuarios
                 </h1>
                 <button
                     onClick={openCreateModal}
-                    className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium"
+                    className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors font-medium"
                 >
                     <FiPlus className="w-5 h-5" />
                     Crear Usuario
@@ -166,24 +180,24 @@ const AdminAccountsView = () => {
             </div>
 
             {/* Herramienta de Comprobación de Contraseña */}
-            <div className="bg-white dark:bg-dark-surface p-6 rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
+            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
                 <div className="flex items-center gap-3 mb-4">
                     <FiSearch className="w-6 h-6 text-brand" />
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">
                         Verificar Contraseña Filtrada
                     </h2>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                     <input
                         type="password"
                         value={passwordToCheck}
                         onChange={(e) => setPasswordToCheck(e.target.value)}
                         placeholder="Ingresa una contraseña a verificar"
-                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text focus:ring-2 focus:ring-brand focus:border-transparent"
                     />
                     <button
                         onClick={handleCheckPassword}
-                        className="px-6 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium"
+                        className="px-6 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors font-medium"
                     >
                         Verificar
                     </button>
@@ -204,7 +218,7 @@ const AdminAccountsView = () => {
             </div>
 
             {/* Tabla de Usuarios */}
-            <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <tr>
@@ -236,16 +250,16 @@ const AdminAccountsView = () => {
                                             <FiUser className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                                         </div>
                                         <div>
-                                            <p className="font-medium text-gray-900 dark:text-white">
+                                            <p className="font-medium text-light-text dark:text-dark-text">
                                                 {user.name}
                                             </p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            <p className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
                                                 {user.email}
                                             </p>
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                                <td className="px-6 py-4 text-light-text dark:text-dark-text">
                                     {user.role}
                                 </td>
                                 <td className="px-6 py-4">
@@ -256,7 +270,7 @@ const AdminAccountsView = () => {
                                         </span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                <td className="px-6 py-4 text-sm text-light-textSecondary dark:text-dark-textSecondary">
                                     {user.lastLogin}
                                 </td>
                                 <td className="px-6 py-4">
@@ -304,7 +318,7 @@ const AdminAccountsView = () => {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-md w-full mx-4">
                         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                            <h3 className="text-xl font-semibold text-light-text dark:text-dark-text">
                                 {editingUser ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
                             </h3>
                             <button
@@ -319,7 +333,7 @@ const AdminAccountsView = () => {
                         </div>
                         <form onSubmit={handleCreateUser} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">
                                     Nombre Completo
                                 </label>
                                 <input
@@ -328,11 +342,11 @@ const AdminAccountsView = () => {
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     placeholder="Ej: Juan Pérez"
                                     required
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text focus:ring-2 focus:ring-brand focus:border-transparent"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">
                                     Email
                                 </label>
                                 <input
@@ -341,17 +355,17 @@ const AdminAccountsView = () => {
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     placeholder="juan.perez@empresa.cl"
                                     required
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text focus:ring-2 focus:ring-brand focus:border-transparent"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">
                                     Rol
                                 </label>
                                 <select
                                     value={formData.role}
                                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text focus:ring-2 focus:ring-brand focus:border-transparent"
                                 >
                                     <option>Administrador</option>
                                     <option>Finanzas</option>
@@ -361,7 +375,7 @@ const AdminAccountsView = () => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">
                                     Contraseña {editingUser && '(dejar vacío para mantener actual)'}
                                 </label>
                                 <div className="flex gap-2">
@@ -370,7 +384,7 @@ const AdminAccountsView = () => {
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                         placeholder="Contraseña"
-                                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-transparent"
+                                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text focus:ring-2 focus:ring-brand focus:border-transparent"
                                     />
                                     <button
                                         type="button"
@@ -394,7 +408,7 @@ const AdminAccountsView = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
+                                    className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors"
                                 >
                                     {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
                                 </button>
@@ -409,7 +423,7 @@ const AdminAccountsView = () => {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-md w-full mx-4">
                         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                            <h3 className="text-xl font-semibold text-light-text dark:text-dark-text">
                                 Contraseña de {showPasswordModal.name}
                             </h3>
                             <button
@@ -424,7 +438,7 @@ const AdminAccountsView = () => {
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">
                                     Contraseña Actual
                                 </label>
                                 <div className="relative">
@@ -432,7 +446,7 @@ const AdminAccountsView = () => {
                                         type={showPassword ? "text" : "password"}
                                         value={showPasswordModal.password}
                                         readOnly
-                                        className="w-full px-4 py-2 pr-20 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-mono"
+                                        className="w-full px-4 py-2 pr-20 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-light-text dark:text-dark-text font-mono"
                                     />
                                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                                         <button
@@ -462,7 +476,7 @@ const AdminAccountsView = () => {
                             </div>
                             <button
                                 onClick={() => setShowPasswordGenerator(true)}
-                                className="w-full px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium"
+                                className="w-full px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors font-medium"
                             >
                                 Generar Nueva Contraseña
                             </button>
@@ -484,7 +498,7 @@ const AdminAccountsView = () => {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-2xl w-full mx-4">
                         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                            <h3 className="text-xl font-semibold text-light-text dark:text-dark-text">
                                 Registro de Actividad
                             </h3>
                             <button
@@ -497,7 +511,10 @@ const AdminAccountsView = () => {
                         <div className="p-6">
                             <div className="space-y-3">
                                 {fakeLogs.map((log) => {
-                                    const statusInfo = getStatusIcon(log.status);
+
+                                    // --- MODIFICACIÓN 2: Usar la función correcta 'getLogStatusInfo' ---
+                                    const statusInfo = getLogStatusInfo(log);
+
                                     return (
                                         <div
                                             key={log.id}
@@ -506,10 +523,10 @@ const AdminAccountsView = () => {
                                             <div className="flex items-center gap-3">
                                                 <span className="text-xl">{statusInfo.icon}</span>
                                                 <div>
-                                                    <p className="font-medium text-gray-900 dark:text-white">
+                                                    <p className="font-medium text-light-text dark:text-dark-text">
                                                         {log.site}
                                                     </p>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    <p className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
                                                         {log.time}
                                                     </p>
                                                 </div>
@@ -542,12 +559,12 @@ const AdminAccountsView = () => {
                             <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
                                 <FiTrash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-2">
+                            <h3 className="text-xl font-semibold text-light-text dark:text-dark-text text-center mb-2">
                                 Eliminar Usuario
                             </h3>
-                            <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
+                            <p className="text-light-textSecondary dark:text-dark-textSecondary text-center mb-6">
                                 ¿Estás seguro que quieres eliminar al usuario{' '}
-                                <span className="font-semibold text-gray-900 dark:text-white">
+                                <span className="font-semibold text-light-text dark:text-dark-text">
                                     {users.find(u => u.id === showDeleteModal)?.name}
                                 </span>?
                             </p>

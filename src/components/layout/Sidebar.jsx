@@ -1,11 +1,12 @@
 // src/components/layout/Sidebar.jsx
-import { FiShield, FiUsers, FiMessageSquare, FiLogOut, FiHome } from 'react-icons/fi';
+import { FiShield, FiUsers, FiMessageSquare, FiLogOut, FiHome,FiList } from 'react-icons/fi';
 
 const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) => {
     // Configuración de navegación según el rol
     const navigationConfig = {
         admin: [
             { name: 'Gestión de Cuentas', icon: FiUsers, view: 'admin_accounts' },
+            { name: 'Lista Blanca', icon: FiList, view: 'whitelist' },
             { name: 'Asistente Chatbot', icon: FiMessageSquare, view: 'chatbot' }
         ],
         empleado: [

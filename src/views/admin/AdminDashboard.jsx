@@ -3,20 +3,24 @@ import { useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import NotificationsModal from '../../views/common/NotificationsModal';
 import ChatbotView from '../common/ChatbotView';
-
-// Importar la vista principal (la que ya tenías)
-import AdminAccountsView from './AdminAccountsView'; // Crearemos este archivo
+import AdminAccountsView from './AdminAccountsView';
+import WhitelistView from './WhiteListView.jsx';
 
 const AdminDashboard = ({ handleLogout, isDark, toggleDarkMode }) => {
     // Estado para navegación interna
     const [currentView, setCurrentView] = useState('admin_accounts');
     const [showAllNotifications, setShowAllNotifications] = useState(false);
-
+    const [whitelist, setWhitelist] = useState([
+        'mail.google.com',
+        'erp.empresa.cl'
+    ]);
     // Función para renderizar la vista actual
     const renderView = () => {
         switch (currentView) {
             case 'admin_accounts':
                 return <AdminAccountsView />;
+            case 'whitelist':
+                return <WhitelistView whitelist={whitelist} setWhitelist={setWhitelist} />;
             case 'chatbot':
                 return <ChatbotView userRole="admin" />;
             default:
@@ -29,6 +33,8 @@ const AdminDashboard = ({ handleLogout, isDark, toggleDarkMode }) => {
         switch (currentView) {
             case 'admin_accounts':
                 return 'Gestión de Cuentas';
+            case 'whitelist':
+                return 'Gestión de Lista Blanca';
             case 'chatbot':
                 return 'Asistente Chatbot';
             default:
