@@ -1,11 +1,10 @@
 // src/views/creator/CreatorDashboard.jsx
 import { useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { fakeCreatorAccounts } from '../../data/fakeCreatorData'; // Nuestros datos
-// Importa tus vistas comunes
+import NotificationsModal from '../common/NotificationsModal'; // ⭐ AGREGADO
+import { fakeCreatorAccounts } from '../../data/fakeCreatorData';
 import VerifyPasswordView from '../common/VerifyPasswordView';
 import ChatbotView from '../common/ChatbotView';
-// Iconos
 import {
     FiCheckCircle,
     FiAlertTriangle,
@@ -31,7 +30,6 @@ const AccountsGrid = ({ onAccountClick }) => {
 
     return (
         <div className="p-6">
-            {/* Header */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-light-text dark:text-dark-text mb-2">
                     Pinned Accounts
@@ -41,10 +39,9 @@ const AccountsGrid = ({ onAccountClick }) => {
                 </p>
             </div>
 
-            {/* Grid de Cuentas (como en el mockup) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {fakeCreatorAccounts.map((account) => {
-                    const Icon = account.icon; // <--- Esto SÍ está bien (se usa en la línea 69)
+                    const Icon = account.icon;
                     return (
                         <div
                             key={account.id}
@@ -63,7 +60,7 @@ const AccountsGrid = ({ onAccountClick }) => {
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => onAccountClick(account)} // Abre el modal
+                                    onClick={() => onAccountClick(account)}
                                     className="text-light-textSecondary dark:text-dark-textSecondary"
                                 >
                                     <FiChevronDown className="w-5 h-5" />
@@ -79,11 +76,8 @@ const AccountsGrid = ({ onAccountClick }) => {
 
 // --- Sub-componente: El Modal (Pop-up) ---
 const AccountModal = ({ account, onClose }) => {
-
-    // --- CORRECCIÓN 1 (Línea 152): Aliasear el ícono a una variable PascalCase ---
     const AccountIcon = account.icon;
 
-    // Renderiza el modal estándar
     const renderStandardView = () => (
         <>
             <h3 className="text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary">Nombre de Usuario</h3>
@@ -107,10 +101,6 @@ const AccountModal = ({ account, onClose }) => {
         </>
     );
 
-    // --- CORRECCIÓN 2 (Línea 113): Objeto 'platformIcons' eliminado (no se usaba) ---
-    // (Objeto eliminado)
-
-    // Renderiza la vista especial de Gmail
     const renderGmailView = () => (
         <ul className="space-y-3">
             {account.associatedEmails.map((item) => (
@@ -121,7 +111,6 @@ const AccountModal = ({ account, onClose }) => {
                             <span className="text-sm">Plataformas Múltiples</span>
                         ) : (
                             item.platforms.map((Icon, index) => {
-                                // Asumo que 'Icon' es el componente FiMail, FiInstagram, etc.
                                 const PlatformIcon = Icon;
                                 return <PlatformIcon key={index} className="w-5 h-5" />;
                             })
@@ -136,11 +125,10 @@ const AccountModal = ({ account, onClose }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
             <div
                 className="w-full max-w-lg p-6 bg-light-surface dark:bg-dark-surface rounded-lg shadow-xl m-4"
-                onClick={(e) => e.stopPropagation()} // Evita que el clic en el modal lo cierre
+                onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-3">
-                        {/* --- CORRECCIÓN 3 (Línea 152): Usar la variable PascalCase --- */}
                         <AccountIcon className="w-6 h-6 text-brand" />
                         <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">{account.platform}</h2>
                     </div>
@@ -149,57 +137,69 @@ const AccountModal = ({ account, onClose }) => {
                     </button>
                 </div>
 
-                {/* Renderizado condicional del contenido del modal */}
                 {account.platform === 'Gmail' ? renderGmailView() : renderStandardView()}
-
             </div>
         </div>
     );
 };
 
-
 // --- Componente Principal del Dashboard del Creador ---
 const CreatorDashboard = (props) => {
-    // Estado para la navegación interna (Accounts, Security, Chatbot)
     const [currentView, setCurrentView] = useState('accounts');
-
-    // Estado para el modal (pop-up)
     const [selectedAccount, setSelectedAccount] = useState(null);
+    const [showAllNotifications, setShowAllNotifications] = useState(false); // ⭐ AGREGADO
 
     const renderView = () => {
         switch (currentView) {
             case 'accounts':
                 return <AccountsGrid onAccountClick={setSelectedAccount} />;
             case 'security':
-                // Asegúrate de que la ruta de importación sea correcta
                 return <VerifyPasswordView />;
             case 'chatbot':
-                // Asegúrate de que la ruta de importación sea correcta
                 return <ChatbotView />;
             default:
                 return <AccountsGrid onAccountClick={setSelectedAccount} />;
         }
     };
 
-    return (
-        // Pasamos el estado de la vista y el handler al Layout/Sidebar
-        <DashboardLayout
-            {...props}
-            userRole="creator"
-            currentView={currentView}
-            onNavigate={setCurrentView}
-        >
-            {/* Renderiza la vista activa */}
-            {renderView()}
+    const getViewTitle = () => {
+        switch (currentView) {
+            case 'accounts':
+                return 'Accounts';
+            case 'security':
+                return 'Security';
+            case 'chatbot':
+                return 'Asistente Chatbot';
+            default:
+                return 'Accounts';
+        }
+    };
 
-            {/* Renderiza el modal si hay una cuenta seleccionada */}
-            {selectedAccount && (
-                <AccountModal
-                    account={selectedAccount}
-                    onClose={() => setSelectedAccount(null)}
-                />
+    return (
+        <>
+            <DashboardLayout
+                {...props}
+                viewTitle={getViewTitle()} // ⭐ AGREGADO
+                userRole="creator"
+                currentView={currentView}
+                onNavigate={setCurrentView}
+                onViewAllNotificationsClick={() => setShowAllNotifications(true)} // ⭐ AGREGADO
+            >
+                {renderView()}
+
+                {selectedAccount && (
+                    <AccountModal
+                        account={selectedAccount}
+                        onClose={() => setSelectedAccount(null)}
+                    />
+                )}
+            </DashboardLayout>
+
+            {/* ⭐ Modal de Notificaciones - AGREGADO */}
+            {showAllNotifications && (
+                <NotificationsModal onClose={() => setShowAllNotifications(false)} />
             )}
-        </DashboardLayout>
+        </>
     );
 };
 

@@ -1,20 +1,15 @@
 // src/views/empleado/EmpleadoDashboard.jsx
 import { useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
+import NotificationsModal from '../common/NotificationsModal'; // ⭐ AGREGADO
 import { FiShield, FiActivity, FiAlertCircle, FiSearch, FiEye, FiEyeOff, FiCopy, FiCheck } from 'react-icons/fi';
 import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
-
-// --- MODIFICACIÓN 1: Importar la vista del Chatbot ---
-// (Asegúrate de que esta ruta sea correcta según tu estructura)
 import ChatbotView from '../common/ChatbotView';
 
-// --- MODIFICACIÓN 2: Mover todo el contenido del dashboard a su propio componente ---
-// (Este componente contiene todo tu código original sin cambios)
+// --- Contenido del Dashboard (sin cambios) ---
 const DashboardContent = () => {
     const [passwordToCheck, setPasswordToCheck] = useState('');
     const [checkResult, setCheckResult] = useState(null);
-
-    // Estado para "Mi Contraseña"
     const [myPassword, setMyPassword] = useState('MiP@ssw0rd2024!');
     const [showMyPassword, setShowMyPassword] = useState(false);
     const [copiedMyPassword, setCopiedMyPassword] = useState(false);
@@ -55,7 +50,6 @@ const DashboardContent = () => {
 
     return (
         <div className="p-6">
-            {/* Header */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                     Panel de Empleado
@@ -170,7 +164,6 @@ const DashboardContent = () => {
                 </div>
             </div>
 
-            {/* Modal de Generador */}
             {showPasswordGenerator && (
                 <PasswordGeneratorModal
                     onClose={() => setShowPasswordGenerator(false)}
@@ -243,39 +236,53 @@ const DashboardContent = () => {
     );
 };
 
-
-// --- MODIFICACIÓN 3: Componente principal ahora maneja las vistas ---
+// --- Componente principal actualizado ---
 const EmpleadoDashboard = ({ handleLogout, isDark, toggleDarkMode }) => {
+    const [currentView, setCurrentView] = useState('empleado_dashboard'); // ⭐ CAMBIADO de 'dashboard' a 'empleado_dashboard'
+    const [showAllNotifications, setShowAllNotifications] = useState(false); // ⭐ AGREGADO
 
-    // Estado para la navegación interna (dashboard, chatbot)
-    const [currentView, setCurrentView] = useState('dashboard'); // Vista por defecto
-
-    // Función para renderizar la vista correcta
     const renderView = () => {
         switch (currentView) {
-            case 'dashboard':
-                return <DashboardContent />; // Renderiza el contenido principal
+            case 'empleado_dashboard': // ⭐ CAMBIADO
+                return <DashboardContent />;
             case 'chatbot':
-                return <ChatbotView />; // Renderiza la vista del chatbot
+                return <ChatbotView />;
             default:
                 return <DashboardContent />;
         }
     };
 
+    const getViewTitle = () => {
+        switch (currentView) {
+            case 'empleado_dashboard': // ⭐ CAMBIADO
+                return 'Mi Dashboard';
+            case 'chatbot':
+                return 'Asistente Chatbot';
+            default:
+                return 'Mi Dashboard';
+        }
+    };
+
     return (
-        <DashboardLayout
-            viewTitle={currentView === 'dashboard' ? 'Dashboard Empleado' : 'Asistente Chatbot'}
-            handleLogout={handleLogout}
-            isDark={isDark}
-            toggleDarkMode={toggleDarkMode}
-            userRole="empleado"
-            // --- MODIFICACIÓN 4: Pasar estado y handler al Sidebar ---
-            currentView={currentView}
-            onNavigate={setCurrentView} // Pasa la función para cambiar de vista
-        >
-            {/* Renderiza la vista activa */}
-            {renderView()}
-        </DashboardLayout>
+        <>
+            <DashboardLayout
+                viewTitle={getViewTitle()} // ⭐ CAMBIADO de hardcoded a función
+                handleLogout={handleLogout}
+                isDark={isDark}
+                toggleDarkMode={toggleDarkMode}
+                userRole="empleado"
+                currentView={currentView}
+                onNavigate={setCurrentView}
+                onViewAllNotificationsClick={() => setShowAllNotifications(true)} // ⭐ AGREGADO
+            >
+                {renderView()}
+            </DashboardLayout>
+
+            {/* ⭐ Modal de Notificaciones - AGREGADO */}
+            {showAllNotifications && (
+                <NotificationsModal onClose={() => setShowAllNotifications(false)} />
+            )}
+        </>
     );
 };
 
