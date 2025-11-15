@@ -102,7 +102,7 @@ const Login = ({ onLogin }) => {
 
                 {/* Footer */}
                 <p className="text-center text-gray-500 text-sm mt-6">
-                    SafeMate © 2024 - Protegiendo tu empresa
+                    SafeMate © 2025 - Protegiendo tu empresa y tu privacidad
                 </p>
             </div>
         </div>

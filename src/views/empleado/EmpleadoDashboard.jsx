@@ -5,6 +5,7 @@ import NotificationsModal from '../common/NotificationsModal'; // ⭐ AGREGADO
 import { FiShield, FiActivity, FiAlertCircle, FiSearch, FiEye, FiEyeOff, FiCopy, FiCheck } from 'react-icons/fi';
 import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
 import ChatbotView from '../common/ChatbotView';
+import { compromisedPasswords } from '../../data/fakeData';
 
 // --- Contenido del Dashboard (sin cambios) ---
 const DashboardContent = () => {
@@ -21,17 +22,16 @@ const DashboardContent = () => {
             return;
         }
 
-        const weakPasswords = ['123456', 'password', 'admin', '12345678', 'qwerty'];
-        const isWeak = weakPasswords.includes(passwordToCheck.toLowerCase());
+        // Verificar en la lista de contraseñas comprometidas
+        const isCompromised = compromisedPasswords.includes(passwordToCheck);
 
         setCheckResult({
-            status: isWeak ? 'danger' : 'safe',
-            message: isWeak
+            status: isCompromised ? 'danger' : 'safe',
+            message: isCompromised
                 ? '⚠️ Esta contraseña ha sido encontrada en filtraciones de datos'
                 : '✅ Esta contraseña no aparece en bases de datos conocidas'
         });
     };
-
     const handleCopyMyPassword = async () => {
         try {
             await navigator.clipboard.writeText(myPassword);

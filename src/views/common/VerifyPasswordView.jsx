@@ -1,8 +1,7 @@
 // src/views/common/VerifyPasswordView.jsx
 import { useState } from 'react';
-// --- MODIFICACIÓN 1: Eliminamos la importación del DashboardLayout ---
-// import DashboardLayout from '../../components/layout/DashboardLayout';
 import { FiSearch, FiShield, FiAlertTriangle, FiCheckCircle } from 'react-icons/fi';
+import { compromisedPasswords } from '../../data/fakeData';
 
 // --- MODIFICACIÓN 2: Eliminamos los props del layout ---
 const VerifyPasswordView = () => {
@@ -20,17 +19,14 @@ const VerifyPasswordView = () => {
 
         // Simular verificación con un pequeño delay
         setTimeout(() => {
-            // Contraseñas débiles conocidas para la simulación
-            const weakPasswords = ['123456', 'password', 'admin', '12345678', 'qwerty', '123456789',
-                'letmein', 'welcome', 'monkey', '1234567890'];
-            const isWeak = weakPasswords.includes(passwordToCheck.toLowerCase());
+            const isCompromised = compromisedPasswords.includes(passwordToCheck);
 
             setCheckResult({
-                status: isWeak ? 'danger' : 'safe',
-                message: isWeak
+                status: isCompromised ? 'danger' : 'safe',
+                message: isCompromised
                     ? 'Esta contraseña ha sido encontrada en filtraciones de datos conocidas'
                     : 'Esta contraseña no aparece en bases de datos de filtraciones conocidas',
-                details: isWeak
+                details: isCompromised
                     ? 'Te recomendamos cambiarla inmediatamente y usar el generador de contraseñas robustas.'
                     : 'Sin embargo, asegúrate de que tenga al menos 12 caracteres y combine letras, números y símbolos.'
             });

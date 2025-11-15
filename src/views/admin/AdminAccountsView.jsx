@@ -1,4 +1,4 @@
-// src/views/admin/AdminAccountsView.jsx
+// src/views/admin/AdminAccountsView.jsx - VERSIÓN FINAL CORREGIDA
 import { useState } from 'react';
 import {
     FiPlus,
@@ -11,18 +11,17 @@ import {
     FiEdit,
     FiCopy,
     FiCheck,
-    FiSearch
+    FiSearch,
 } from 'react-icons/fi';
-import { fakeUsers, fakeLogs } from '../../data/fakeData';
+import { fakeUsers, fakeLogs, compromisedPasswords } from '../../data/fakeData';
 import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
 
-const AdminAccountsView = ({ whitelist }) => {
+const AdminAccountsView = ({ whitelist = [] }) => {
     // Estados principales
     const [users, setUsers] = useState(fakeUsers);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(null);
     const [showLogsModal, setShowLogsModal] = useState(false);
-    // (Línea duplicada eliminada)
     const [showPasswordModal, setShowPasswordModal] = useState(null);
     const [showPasswordGenerator, setShowPasswordGenerator] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
@@ -39,12 +38,52 @@ const AdminAccountsView = ({ whitelist }) => {
     const [passwordToCheck, setPasswordToCheck] = useState('');
     const [checkResult, setCheckResult] = useState(null);
 
-    // Funciones CRUD (Sin cambios)
+    // ✅ Función para obtener estado del log (CORREGIDA)
+    const getLogStatusInfo = (log) => {
+        // Normalizar dominios para comparación
+        const normalizedLogSite = log.site.toLowerCase().trim();
+        const isInWhitelist = whitelist.some(domain =>
+            domain.toLowerCase().trim() === normalizedLogSite
+        );
+
+        if (isInWhitelist) {
+            return {
+                icon: '🛡️',
+                text: 'Verificado (Whitelist)',
+                color: 'text-alert-green'
+            };
+        }
+
+        if (log.status === 'red') {
+            return {
+                icon: '🚨',
+                text: 'Peligroso',
+                color: 'text-alert-red'
+            };
+        }
+
+        return {
+            icon: '⚠️',
+            text: 'No Verificado',
+            color: 'text-alert-yellow'
+        };
+    };
+
+    // Función para obtener el estado del usuario
+    const getStatusIcon = (status) => {
+        const icons = {
+            green: { icon: '🛡️', text: 'Seguro', color: 'text-alert-green' },
+            yellow: { icon: '⚠️', text: 'Advertencia', color: 'text-alert-yellow' },
+            red: { icon: '🚨', text: 'Comprometido', color: 'text-alert-red' }
+        };
+        return icons[status] || icons.green;
+    };
+
+    // Funciones CRUD
     const handleCreateUser = (e) => {
         e.preventDefault();
 
         if (editingUser) {
-            // EDITAR usuario existente
             setUsers(users.map(u =>
                 u.id === editingUser.id
                     ? { ...u, ...formData, password: formData.password || u.password }
@@ -52,7 +91,6 @@ const AdminAccountsView = ({ whitelist }) => {
             ));
             alert(`Usuario "${formData.name}" actualizado exitosamente`);
         } else {
-            // CREAR nuevo usuario
             const newUser = {
                 id: Math.max(...users.map(u => u.id)) + 1,
                 ...formData,
@@ -64,7 +102,6 @@ const AdminAccountsView = ({ whitelist }) => {
             alert(`Usuario "${formData.name}" creado exitosamente`);
         }
 
-        // Reset y cerrar
         setShowCreateModal(false);
         setEditingUser(null);
         setFormData({ name: '', email: '', role: 'Finanzas', password: '' });
@@ -94,7 +131,7 @@ const AdminAccountsView = ({ whitelist }) => {
         setShowCreateModal(true);
     };
 
-    // Modal de contraseña (Sin cambios)
+    // Modal de contraseña
     const [showPassword, setShowPassword] = useState(false);
     const [copiedPassword, setCopiedPassword] = useState(false);
 
@@ -123,45 +160,61 @@ const AdminAccountsView = ({ whitelist }) => {
         }
     };
 
-    // Verificación de contraseña filtrada (Sin cambios)
+    // ✅ Verificación de contraseña CORREGIDA
     const handleCheckPassword = () => {
         if (!passwordToCheck) {
             alert('Por favor ingresa una contraseña');
             return;
         }
 
-        const weakPasswords = ['123456', 'password', 'admin', '12345678', 'qwerty'];
-        const isWeak = weakPasswords.includes(passwordToCheck.toLowerCase());
+        // 1. Verificar si pertenece a un usuario comprometido
+        const compromisedUser = users.find(u =>
+            u.password === passwordToCheck && u.status === 'red'
+        );
 
+        if (compromisedUser) {
+            setCheckResult({
+                status: 'danger',
+                message: `⚠️ ALERTA CRÍTICA: Esta contraseña pertenece a ${compromisedUser.name}, cuya cuenta está COMPROMETIDA`,
+                details: 'Esta contraseña fue filtrada en una brecha de seguridad. Debe ser cambiada inmediatamente.'
+            });
+            return;
+        }
+
+        // 2. Verificar en la lista de contraseñas comprometidas
+        const isInLeakedDatabase = compromisedPasswords.includes(passwordToCheck);
+
+        if (isInLeakedDatabase) {
+            setCheckResult({
+                status: 'danger',
+                message: '🚨 Esta contraseña ha sido encontrada en filtraciones de datos conocidas',
+                details: 'Esta contraseña aparece en bases de datos públicas de brechas de seguridad. Cámbiala inmediatamente.'
+            });
+            return;
+        }
+
+        // 3. Verificar si es débil
+        const commonWeakPasswords = ['password', 'admin', 'user', '123', 'abc', 'qwerty'];
+        const isWeak = commonWeakPasswords.some(weak =>
+            passwordToCheck.toLowerCase().includes(weak)
+        );
+
+        if (isWeak) {
+            setCheckResult({
+                status: 'danger',
+                message: '⚠️ Esta es una contraseña débil y predecible',
+                details: 'Aunque no está en bases de datos filtradas, es fácil de adivinar.'
+            });
+            return;
+        }
+
+        // 4. Si pasa todas las verificaciones
         setCheckResult({
-            status: isWeak ? 'danger' : 'safe',
-            message: isWeak
-                ? '⚠️ Esta contraseña ha sido encontrada en filtraciones de datos'
-                : '✅ Esta contraseña no aparece en bases de datos conocidas'
+            status: 'safe',
+            message: '✅ Esta contraseña no aparece en bases de datos de filtraciones conocidas',
+            details: 'Asegúrate de que tenga al menos 12 caracteres y combine letras, números y símbolos.'
         });
     };
-
-    // --- (Función para los LOGS, usa la 'whitelist') ---
-    const getLogStatusInfo = (log) => {
-        if (log.status === 'red') {
-            return { icon: '🚨', text: 'Peligroso', color: 'text-alert-red' };
-        }
-        if (whitelist.includes(log.site)) {
-            return { icon: '🛡️', text: 'Verificado (Whitelist)', color: 'text-alert-green' };
-        }
-        return { icon: '⚠️', text: 'No Verificado', color: 'text-alert-yellow' };
-    };
-
-    // --- (Función para la TABLA DE USUARIOS) ---
-    const getStatusIcon = (status) => {
-        const icons = {
-            green: { icon: '🛡️', text: 'Seguro', color: 'text-alert-green' },
-            yellow: { icon: '⚠️', text: 'Advertencia', color: 'text-alert-yellow' },
-            red: { icon: '🚨', text: 'Comprometido', color: 'text-alert-red' }
-        };
-        return icons[status] || icons.green;
-    };
-
 
     return (
         <div className="p-6">
@@ -202,6 +255,8 @@ const AdminAccountsView = ({ whitelist }) => {
                         Verificar
                     </button>
                 </div>
+
+                {/* ✅ RESULTADO CORREGIDO - Maneja casos donde details puede ser undefined */}
                 {checkResult && (
                     <div className={`mt-4 p-4 rounded-lg ${
                         checkResult.status === 'danger'
@@ -213,6 +268,12 @@ const AdminAccountsView = ({ whitelist }) => {
                         }`}>
                             {checkResult.message}
                         </p>
+                        {/* ✅ PROTECCIÓN: Solo renderiza details si existe */}
+                        {checkResult.details && (
+                            <p className="text-sm text-light-text dark:text-dark-text mt-2">
+                                {checkResult.details}
+                            </p>
+                        )}
                     </div>
                 )}
             </div>
@@ -312,7 +373,8 @@ const AdminAccountsView = ({ whitelist }) => {
                 </table>
             </div>
 
-            {/* MODALES (Crear/Editar, Ver Contraseña, Generador, Ver Logs, Eliminar) */}
+            {/* MODALES - ✅ SOLO UNA DEFINICIÓN DE CADA UNO */}
+
             {/* Modal: Crear/Editar Usuario */}
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -493,14 +555,20 @@ const AdminAccountsView = ({ whitelist }) => {
                 />
             )}
 
-            {/* Modal: Ver Logs */}
+            {/* ✅ Modal: Ver Logs - ÚNICA DEFINICIÓN CON SCROLL */}
             {showLogsModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-2xl w-full mx-4">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-xl font-semibold text-light-text dark:text-dark-text">
-                                Registro de Actividad
-                            </h3>
+                    <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col">
+                        {/* Header - FIJO */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                            <div>
+                                <h3 className="text-xl font-semibold text-light-text dark:text-dark-text">
+                                    Registro de Actividad
+                                </h3>
+                                <p className="text-sm text-light-textSecondary dark:text-dark-textSecondary mt-1">
+                                    {fakeLogs.length} sitios visitados hoy
+                                </p>
+                            </div>
                             <button
                                 onClick={() => setShowLogsModal(false)}
                                 className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -508,22 +576,22 @@ const AdminAccountsView = ({ whitelist }) => {
                                 <FiX className="w-5 h-5 text-gray-500" />
                             </button>
                         </div>
-                        <div className="p-6">
+
+                        {/* Contenido con Scroll */}
+                        <div className="flex-1 overflow-y-auto p-6">
                             <div className="space-y-3">
                                 {fakeLogs.map((log) => {
-
-                                    // --- MODIFICACIÓN 2: Usar la función correcta 'getLogStatusInfo' ---
                                     const statusInfo = getLogStatusInfo(log);
 
                                     return (
                                         <div
                                             key={log.id}
-                                            className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                                            className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-xl">{statusInfo.icon}</span>
-                                                <div>
-                                                    <p className="font-medium text-light-text dark:text-dark-text">
+                                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                <span className="text-2xl flex-shrink-0">{statusInfo.icon}</span>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-medium text-light-text dark:text-dark-text truncate">
                                                         {log.site}
                                                     </p>
                                                     <p className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
@@ -531,18 +599,40 @@ const AdminAccountsView = ({ whitelist }) => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <span className={`text-sm font-medium ${statusInfo.color}`}>
-                                                {statusInfo.text}
-                                            </span>
+                                            <div className="flex-shrink-0 ml-4">
+                                                <span className={`text-sm font-medium px-3 py-1 rounded-full ${
+                                                    statusInfo.color === 'text-alert-green' ? 'bg-green-100 dark:bg-green-900/30 text-alert-green' :
+                                                        statusInfo.color === 'text-alert-red' ? 'bg-red-100 dark:bg-red-900/30 text-alert-red' :
+                                                            'bg-yellow-100 dark:bg-yellow-900/30 text-alert-yellow'
+                                                }`}>
+                                                    {statusInfo.text}
+                                                </span>
+                                            </div>
                                         </div>
                                     );
                                 })}
                             </div>
                         </div>
-                        <div className="flex items-center justify-end p-6 border-t border-gray-200 dark:border-gray-700">
+
+                        {/* Footer - FIJO */}
+                        <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                            <div className="flex items-center gap-4 text-sm text-light-textSecondary dark:text-dark-textSecondary">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 bg-alert-green rounded-full"></span>
+                                    <span>Verificados: {fakeLogs.filter(l => whitelist.includes(l.site)).length}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 bg-alert-red rounded-full"></span>
+                                    <span>Peligrosos: {fakeLogs.filter(l => l.status === 'red').length}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 bg-alert-yellow rounded-full"></span>
+                                    <span>Sin verificar: {fakeLogs.filter(l => l.status === 'yellow' && !whitelist.includes(l.site)).length}</span>
+                                </div>
+                            </div>
                             <button
                                 onClick={() => setShowLogsModal(false)}
-                                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors"
                             >
                                 Cerrar
                             </button>
