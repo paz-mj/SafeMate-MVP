@@ -26,16 +26,13 @@ const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) 
     return (
         <aside className="w-64 bg-gray-900 text-white h-screen flex flex-col flex-shrink-0">
             {/* Logo y Marca */}
-            <div className="p-6 border-b border-gray-800">
-                <div className="flex items-center gap-3">
-                    <FiShield className="w-8 h-8 text-brand" />
-                    <div>
-                        <h1 className="text-xl font-bold">SafeMate</h1>
-                        <p className="text-xs text-gray-400 capitalize">
-                            {userRole}
-                        </p>
-                    </div>
-                </div>
+            <div className="p-6 border-b border-gray-800 flex items-center gap-4">
+                <img
+                    src="/SafeMateLogo.png"
+                    alt="SafeMate"
+                    className="w-16 h-16 rounded-full" // Puedes ajustar a w-12 h-12 si se ve muy grande
+                />
+                <h1 className="text-2xl font-bold text-white">SafeMate</h1>
             </div>
 
             {/* Navegación */}

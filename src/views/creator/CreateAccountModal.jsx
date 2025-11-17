@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { FiX, FiPlus } from 'react-icons/fi';
 import { availablePlatforms } from '../../data/fakeCreatorData';
-// --- MODIFICACIÓN 1: Importar el generador ---
 import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
 
 const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => {
