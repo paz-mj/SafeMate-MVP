@@ -1,5 +1,5 @@
 // src/components/layout/Sidebar.jsx
-import { FiShield, FiUsers, FiMessageSquare, FiLogOut, FiHome,FiList } from 'react-icons/fi';
+import { FiShield, FiUsers, FiMessageSquare, FiLogOut, FiHome, FiList } from 'react-icons/fi';
 
 const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) => {
     // Configuración de navegación según el rol
@@ -24,13 +24,14 @@ const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) 
     const defaultView = navItems[0].view;
 
     return (
-        <aside className="w-64 bg-gray-900 text-white h-screen flex flex-col flex-shrink-0">
+        // Busca el <aside> y usa estas clases:
+        <aside className="w-64 bg-slate-800 dark:bg-slate-950 border-r border-slate-800 dark:border-slate-800 text-white h-screen flex flex-col flex-shrink-0 transition-all duration-300">
             {/* Logo y Marca */}
-            <div className="p-6 border-b border-gray-800 flex items-center gap-4">
+            <div className="p-6 border-b border-white/10 dark:border-gray-800 flex items-center gap-4">
                 <img
                     src="/SafeMateLogo.png"
                     alt="SafeMate"
-                    className="w-16 h-16 rounded-full" // Puedes ajustar a w-12 h-12 si se ve muy grande
+                    className="w-16 h-16 rounded-full"
                 />
                 <h1 className="text-2xl font-bold text-white">SafeMate</h1>
             </div>
@@ -48,8 +49,8 @@ const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) 
                                     onClick={() => onNavigate(item.view)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                                         isActive
-                                            ? 'bg-brand text-white'
-                                            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                            ? 'bg-white/20 dark:bg-brand text-white'
+                                            : 'text-white/80 hover:bg-white/10 dark:hover:bg-gray-800 hover:text-white'
                                     }`}
                                 >
                                     <Icon className="w-5 h-5" />
@@ -62,10 +63,10 @@ const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) 
             </nav>
 
             {/* Logout */}
-            <div className="p-4 border-t border-gray-800">
+            <div className="p-4 border-t border-white/10 dark:border-gray-800">
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 dark:hover:bg-gray-800 hover:text-white transition-colors"
                 >
                     <FiLogOut className="w-5 h-5" />
                     <span className="font-medium">Cerrar Sesión</span>

@@ -1,4 +1,4 @@
-// src/views/admin/AdminAccountsView.jsx - VERSIÓN FINAL CORREGIDA
+// src/views/admin/AdminAccountsView.jsx
 import { useState } from 'react';
 import {
     FiPlus,
@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fi';
 import { fakeUsers, fakeLogs, compromisedPasswords } from '../../data/fakeData';
 import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
+import Toast from '../../views/common/Toast';
 
 const AdminAccountsView = ({ whitelist = [] }) => {
     // Estados principales
@@ -25,8 +26,9 @@ const AdminAccountsView = ({ whitelist = [] }) => {
     const [showPasswordModal, setShowPasswordModal] = useState(null);
     const [showPasswordGenerator, setShowPasswordGenerator] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
+    const [notification, setNotification] = useState(null);
 
-    // Estado para el formulario de crear/editar
+    // Estado para el formulario
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -38,9 +40,8 @@ const AdminAccountsView = ({ whitelist = [] }) => {
     const [passwordToCheck, setPasswordToCheck] = useState('');
     const [checkResult, setCheckResult] = useState(null);
 
-    // ✅ Función para obtener estado del log (CORREGIDA)
+    // Función para obtener estado del log
     const getLogStatusInfo = (log) => {
-        // Normalizar dominios para comparación
         const normalizedLogSite = log.site.toLowerCase().trim();
         const isInWhitelist = whitelist.some(domain =>
             domain.toLowerCase().trim() === normalizedLogSite
@@ -89,7 +90,10 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                     ? { ...u, ...formData, password: formData.password || u.password }
                     : u
             ));
-            alert(`Usuario "${formData.name}" actualizado exitosamente`);
+            setNotification({
+                type: 'success',
+                message: `Usuario "${formData.name}" actualizado exitosamente`
+            });
         } else {
             const newUser = {
                 id: Math.max(...users.map(u => u.id)) + 1,
@@ -99,7 +103,10 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                 password: formData.password || 'Temporal123!'
             };
             setUsers([...users, newUser]);
-            alert(`Usuario "${formData.name}" creado exitosamente`);
+            setNotification({
+                type: 'success',
+                message: `Usuario "${formData.name}" creado exitosamente`
+            });
         }
 
         setShowCreateModal(false);
@@ -110,7 +117,10 @@ const AdminAccountsView = ({ whitelist = [] }) => {
     const handleDeleteUser = (userId) => {
         const user = users.find(u => u.id === userId);
         setUsers(users.filter(u => u.id !== userId));
-        alert(`Usuario "${user.name}" eliminado exitosamente`);
+        setNotification({
+            type: 'success',
+            message: `Usuario "${user.name}" eliminado exitosamente`
+        });
         setShowDeleteModal(null);
     };
 
@@ -140,9 +150,16 @@ const AdminAccountsView = ({ whitelist = [] }) => {
             await navigator.clipboard.writeText(password);
             setCopiedPassword(true);
             setTimeout(() => setCopiedPassword(false), 2000);
+            setNotification({
+                type: 'success',
+                message: 'Contraseña copiada al portapapeles'
+            });
         } catch (err) {
             console.error('Error al copiar la contraseña: ', err);
-            alert('Error al copiar. Por favor, copia manualmente.');
+            setNotification({
+                type: 'danger',
+                message: 'Error al copiar. Por favor, copia manualmente.'
+            });
         }
     };
 
@@ -154,16 +171,22 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                     : u
             ));
             setShowPasswordModal({ ...showPasswordModal, password: newPassword });
-            alert('Contraseña actualizada exitosamente');
+            setNotification({
+                type: 'success',
+                message: 'Contraseña actualizada exitosamente'
+            });
         } else if (showCreateModal) {
             setFormData({ ...formData, password: newPassword });
         }
     };
 
-    // ✅ Verificación de contraseña CORREGIDA
+    // Verificación de contraseña
     const handleCheckPassword = () => {
         if (!passwordToCheck) {
-            alert('Por favor ingresa una contraseña');
+            setNotification({
+                type: 'warning',
+                message: 'Por favor ingresa una contraseña para verificar'
+            });
             return;
         }
 
@@ -256,7 +279,6 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                     </button>
                 </div>
 
-                {/* ✅ RESULTADO CORREGIDO - Maneja casos donde details puede ser undefined */}
                 {checkResult && (
                     <div className={`mt-4 p-4 rounded-lg ${
                         checkResult.status === 'danger'
@@ -268,7 +290,6 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                         }`}>
                             {checkResult.message}
                         </p>
-                        {/* ✅ PROTECCIÓN: Solo renderiza details si existe */}
                         {checkResult.details && (
                             <p className="text-sm text-light-text dark:text-dark-text mt-2">
                                 {checkResult.details}
@@ -373,7 +394,7 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                 </table>
             </div>
 
-            {/* MODALES - ✅ SOLO UNA DEFINICIÓN DE CADA UNO */}
+            {/* MODALES */}
 
             {/* Modal: Crear/Editar Usuario */}
             {showCreateModal && (
@@ -555,11 +576,10 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                 />
             )}
 
-            {/* ✅ Modal: Ver Logs - ÚNICA DEFINICIÓN CON SCROLL */}
+            {/* Modal: Ver Logs */}
             {showLogsModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col">
-                        {/* Header - FIJO */}
                         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                             <div>
                                 <h3 className="text-xl font-semibold text-light-text dark:text-dark-text">
@@ -577,7 +597,6 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                             </button>
                         </div>
 
-                        {/* Contenido con Scroll */}
                         <div className="flex-1 overflow-y-auto p-6">
                             <div className="space-y-3">
                                 {fakeLogs.map((log) => {
@@ -614,7 +633,6 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                             </div>
                         </div>
 
-                        {/* Footer - FIJO */}
                         <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                             <div className="flex items-center gap-4 text-sm text-light-textSecondary dark:text-dark-textSecondary">
                                 <div className="flex items-center gap-2">
@@ -676,6 +694,9 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                     </div>
                 </div>
             )}
+
+            {/* Toast de Notificaciones */}
+            <Toast notification={notification} onClose={() => setNotification(null)} />
         </div>
     );
 };

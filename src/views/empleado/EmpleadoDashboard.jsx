@@ -1,14 +1,15 @@
 // src/views/empleado/EmpleadoDashboard.jsx
 import { useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import NotificationsModal from '../common/NotificationsModal'; // ⭐ AGREGADO
+import NotificationsModal from '../common/NotificationsModal';
 import { FiShield, FiActivity, FiAlertCircle, FiSearch, FiEye, FiEyeOff, FiCopy, FiCheck } from 'react-icons/fi';
 import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
 import ChatbotView from '../common/ChatbotView';
 import { compromisedPasswords } from '../../data/fakeData';
+import Toast from '../../views/common/Toast';
 
-// --- Contenido del Dashboard (sin cambios) ---
-const DashboardContent = () => {
+// --- Contenido del Dashboard ---
+const DashboardContent = ({ setNotification }) => {
     const [passwordToCheck, setPasswordToCheck] = useState('');
     const [checkResult, setCheckResult] = useState(null);
     const [myPassword, setMyPassword] = useState('MiP@ssw0rd2024!');
@@ -18,7 +19,10 @@ const DashboardContent = () => {
 
     const handleCheckPassword = () => {
         if (!passwordToCheck) {
-            alert('Por favor ingresa una contraseña');
+            setNotification({
+                type: 'warning',
+                message: 'Por favor ingresa una contraseña para verificar'
+            });
             return;
         }
 
@@ -32,20 +36,31 @@ const DashboardContent = () => {
                 : '✅ Esta contraseña no aparece en bases de datos conocidas'
         });
     };
+
     const handleCopyMyPassword = async () => {
         try {
             await navigator.clipboard.writeText(myPassword);
             setCopiedMyPassword(true);
             setTimeout(() => setCopiedMyPassword(false), 2000);
+            setNotification({
+                type: 'success',
+                message: 'Contraseña copiada al portapapeles'
+            });
         } catch (err) {
             console.error('Error al copiar la contraseña: ', err);
-            alert('Error al copiar. Por favor, copia manualmente.');
+            setNotification({
+                type: 'danger',
+                message: 'Error al copiar. Por favor, copia manualmente.'
+            });
         }
     };
 
     const handlePasswordGenerated = (newPassword) => {
         setMyPassword(newPassword);
-        alert('Tu contraseña ha sido actualizada exitosamente');
+        setNotification({
+            type: 'success',
+            message: 'Tu contraseña ha sido actualizada exitosamente'
+        });
     };
 
     return (
@@ -236,25 +251,26 @@ const DashboardContent = () => {
     );
 };
 
-// --- Componente principal actualizado ---
+// --- Componente principal ---
 const EmpleadoDashboard = ({ handleLogout, isDark, toggleDarkMode }) => {
-    const [currentView, setCurrentView] = useState('empleado_dashboard'); // ⭐ CAMBIADO de 'dashboard' a 'empleado_dashboard'
-    const [showAllNotifications, setShowAllNotifications] = useState(false); // ⭐ AGREGADO
+    const [currentView, setCurrentView] = useState('empleado_dashboard');
+    const [showAllNotifications, setShowAllNotifications] = useState(false);
+    const [notification, setNotification] = useState(null);
 
     const renderView = () => {
         switch (currentView) {
-            case 'empleado_dashboard': // ⭐ CAMBIADO
-                return <DashboardContent />;
+            case 'empleado_dashboard':
+                return <DashboardContent notification={notification} setNotification={setNotification} />;
             case 'chatbot':
                 return <ChatbotView />;
             default:
-                return <DashboardContent />;
+                return <DashboardContent notification={notification} setNotification={setNotification} />;
         }
     };
 
     const getViewTitle = () => {
         switch (currentView) {
-            case 'empleado_dashboard': // ⭐ CAMBIADO
+            case 'empleado_dashboard':
                 return 'Mi Dashboard';
             case 'chatbot':
                 return 'Asistente Chatbot';
@@ -266,22 +282,24 @@ const EmpleadoDashboard = ({ handleLogout, isDark, toggleDarkMode }) => {
     return (
         <>
             <DashboardLayout
-                viewTitle={getViewTitle()} // ⭐ CAMBIADO de hardcoded a función
+                viewTitle={getViewTitle()}
                 handleLogout={handleLogout}
                 isDark={isDark}
                 toggleDarkMode={toggleDarkMode}
                 userRole="empleado"
                 currentView={currentView}
                 onNavigate={setCurrentView}
-                onViewAllNotificationsClick={() => setShowAllNotifications(true)} // ⭐ AGREGADO
+                onViewAllNotificationsClick={() => setShowAllNotifications(true)}
             >
                 {renderView()}
             </DashboardLayout>
 
-            {/* ⭐ Modal de Notificaciones - AGREGADO */}
             {showAllNotifications && (
                 <NotificationsModal onClose={() => setShowAllNotifications(false)} />
             )}
+
+            {/* Toast de Notificaciones */}
+            <Toast notification={notification} onClose={() => setNotification(null)} />
         </>
     );
 };

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { FiX, FiPlus } from 'react-icons/fi';
 import { availablePlatforms } from '../../data/fakeCreatorData';
 import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
+import Toast from '../../views/common/Toast';
 
 const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => {
     const [formData, setFormData] = useState({
@@ -12,8 +13,8 @@ const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => 
         password: ''
     });
 
-    // --- MODIFICACIÓN 2: Añadir estado para el generador ---
     const [showPasswordGenerator, setShowPasswordGenerator] = useState(false);
+    const [notification, setNotification] = useState(null);
 
     // Filtrar plataformas ya agregadas
     const availableOptions = availablePlatforms.filter(
@@ -24,7 +25,10 @@ const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => 
         e.preventDefault();
 
         if (!formData.platform || !formData.username || !formData.email || !formData.password) {
-            alert('Por favor completa todos los campos');
+            setNotification({
+                type: 'warning',
+                message: 'Por favor completa todos los campos antes de continuar'
+            });
             return;
         }
 
@@ -32,7 +36,7 @@ const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => 
         const selectedPlatform = availablePlatforms.find(p => p.name === formData.platform);
 
         const newAccount = {
-            id: Date.now(), // ID temporal
+            id: Date.now(),
             platform: formData.platform,
             icon: selectedPlatform.icon,
             username: formData.username,
@@ -51,14 +55,13 @@ const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => 
         onClose();
     };
 
-    // --- MODIFICACIÓN 3: Handler para recibir la contraseña generada ---
     const handlePasswordGenerated = (newPassword) => {
         setFormData({ ...formData, password: newPassword });
-        setShowPasswordGenerator(false); // Cierra el modal de generación
+        setShowPasswordGenerator(false);
     };
 
     return (
-        <> {/* <-- Envolver en Fragment para el modal anidado */}
+        <>
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
                 <div
                     className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-md w-full mx-4"
@@ -135,7 +138,7 @@ const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => 
                             />
                         </div>
 
-                        {/* Password --- MODIFICACIÓN 4: Añadir botón "Generar" --- */}
+                        {/* Password */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Contraseña *
@@ -150,7 +153,7 @@ const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => 
                                     required
                                 />
                                 <button
-                                    type="button" // Importante que sea 'button' para no enviar el form
+                                    type="button"
                                     onClick={() => setShowPasswordGenerator(true)}
                                     className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                 >
@@ -184,6 +187,9 @@ const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => 
                             </button>
                         </div>
                     </form>
+
+                    {/* Toast dentro del Modal (con z-index más alto que el modal) */}
+                    <Toast notification={notification} onClose={() => setNotification(null)} />
                 </div>
             </div>
 
