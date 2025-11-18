@@ -10,6 +10,7 @@ import Toast from '../../views/common/Toast';
 
 // --- Contenido del Dashboard ---
 const DashboardContent = ({ setNotification }) => {
+    // ... (estados: passwordToCheck, checkResult, etc. se mantienen igual) ...
     const [passwordToCheck, setPasswordToCheck] = useState('');
     const [checkResult, setCheckResult] = useState(null);
     const [myPassword, setMyPassword] = useState('MiP@ssw0rd2024!');
@@ -17,6 +18,7 @@ const DashboardContent = ({ setNotification }) => {
     const [copiedMyPassword, setCopiedMyPassword] = useState(false);
     const [showPasswordGenerator, setShowPasswordGenerator] = useState(false);
 
+    // ... (funciones: handleCheckPassword, handleCopyMyPassword, etc. se mantienen igual) ...
     const handleCheckPassword = () => {
         if (!passwordToCheck) {
             setNotification({
@@ -74,8 +76,9 @@ const DashboardContent = ({ setNotification }) => {
                 </p>
             </div>
 
-            {/* Cards de Estado */}
+            {/* Cards de Estado (ya es responsive) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {/* ... (cards: Estado General, Sitios Visitados, Alertas) ... */}
                 <div className="bg-white dark:bg-dark-surface p-6 rounded-lg border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
@@ -122,8 +125,9 @@ const DashboardContent = ({ setNotification }) => {
                 </div>
             </div>
 
-            {/* Mi Contraseña */}
+            {/* Mi Contraseña (sin cambios, ya es responsive) */}
             <div className="bg-white dark:bg-dark-surface p-6 rounded-lg border border-gray-200 dark:border-gray-700 mb-8">
+                {/* ... */}
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                     🔐 Mi Contraseña
                 </h2>
@@ -198,7 +202,8 @@ const DashboardContent = ({ setNotification }) => {
                     Verifica si tu contraseña ha sido expuesta en alguna filtración de datos conocida.
                 </p>
 
-                <div className="flex gap-3">
+                {/* --- MODIFICADO: Formulario apilable --- */}
+                <div className="flex flex-col sm:flex-row gap-3">
                     <input
                         type="password"
                         value={passwordToCheck}
@@ -208,13 +213,14 @@ const DashboardContent = ({ setNotification }) => {
                     />
                     <button
                         onClick={handleCheckPassword}
-                        className="px-6 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium"
+                        className="px-6 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium w-full sm:w-auto"
                     >
                         Verificar
                     </button>
                 </div>
 
                 {checkResult && (
+                    // ... (sin cambios)
                     <div className={`mt-4 p-4 rounded-lg ${
                         checkResult.status === 'danger'
                             ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
@@ -231,8 +237,9 @@ const DashboardContent = ({ setNotification }) => {
                 )}
             </div>
 
-            {/* Información Adicional */}
+            {/* Información Adicional (ya es responsive) */}
             <div className="bg-white dark:bg-dark-surface p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                {/* ... (sin cambios) ... */}
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                     📊 Estadísticas de Seguridad
                 </h3>
@@ -252,6 +259,7 @@ const DashboardContent = ({ setNotification }) => {
 };
 
 // --- Componente principal ---
+// ... (El resto del componente EmpleadoDashboard se mantiene igual) ...
 const EmpleadoDashboard = ({ handleLogout, isDark, toggleDarkMode }) => {
     const [currentView, setCurrentView] = useState('empleado_dashboard');
     const [showAllNotifications, setShowAllNotifications] = useState(false);

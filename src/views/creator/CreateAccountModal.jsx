@@ -1,9 +1,9 @@
 // src/views/creator/CreateAccountModal.jsx
 import { useState } from 'react';
 import { FiX, FiPlus } from 'react-icons/fi';
-import { availablePlatforms } from '../../data/fakeCreatorData';
-import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
-import Toast from '../../views/common/Toast';
+import { availablePlatforms } from '../../data/fakeCreatorData.js';
+import PasswordGeneratorModal from '../../components/PasswordGeneratorModal.jsx';
+import Toast from '../common/Toast.jsx';
 
 const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => {
     const [formData, setFormData] = useState({
@@ -38,7 +38,7 @@ const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => 
         const newAccount = {
             id: Date.now(),
             platform: formData.platform,
-            icon: selectedPlatform.icon,
+            icon: selectedPlatform ? selectedPlatform.icon : FiPlus, // Fallback icon
             username: formData.username,
             email: formData.email,
             password: formData.password,
@@ -62,9 +62,11 @@ const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => 
 
     return (
         <>
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+            {/* --- CORRECCIÓN: Añadido 'p-4' al contenedor exterior --- */}
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
                 <div
-                    className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-md w-full mx-4"
+                    // --- CORRECCIÓN: Se elimina 'mx-4' del modal ---
+                    className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-md w-full"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
@@ -143,7 +145,8 @@ const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => 
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Contraseña *
                             </label>
-                            <div className="flex gap-2">
+                            {/* CAMBIO AQUÍ: Agregado 'flex-col sm:flex-row' para que se adapte a móviles */}
+                            <div className="flex flex-col sm:flex-row gap-2">
                                 <input
                                     type="password"
                                     value={formData.password}
@@ -155,7 +158,7 @@ const CreateAccountModal = ({ onClose, onCreateAccount, existingPlatforms }) => 
                                 <button
                                     type="button"
                                     onClick={() => setShowPasswordGenerator(true)}
-                                    className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                    className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors whitespace-nowrap"
                                 >
                                     Generar
                                 </button>

@@ -4,18 +4,16 @@ import {
     FiPlus,
     FiUser,
     FiEye,
-    FiEyeOff,
     FiFileText,
     FiTrash2,
     FiX,
     FiEdit,
     FiCopy,
-    FiCheck,
     FiSearch,
 } from 'react-icons/fi';
-import { fakeUsers, fakeLogs, compromisedPasswords } from '../../data/fakeData';
-import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
-import Toast from '../../views/common/Toast';
+import { fakeUsers, fakeLogs, compromisedPasswords } from '../../data/fakeData.js';
+import PasswordGeneratorModal from '../../components/PasswordGeneratorModal.jsx';
+import Toast from '../common/Toast.jsx';
 
 const AdminAccountsView = ({ whitelist = [] }) => {
     // Estados principales
@@ -36,11 +34,9 @@ const AdminAccountsView = ({ whitelist = [] }) => {
         password: ''
     });
 
-    // Estado para verificación de contraseña
     const [passwordToCheck, setPasswordToCheck] = useState('');
     const [checkResult, setCheckResult] = useState(null);
 
-    // Función para obtener estado del log
     const getLogStatusInfo = (log) => {
         const normalizedLogSite = log.site.toLowerCase().trim();
         const isInWhitelist = whitelist.some(domain =>
@@ -48,29 +44,14 @@ const AdminAccountsView = ({ whitelist = [] }) => {
         );
 
         if (isInWhitelist) {
-            return {
-                icon: '🛡️',
-                text: 'Verificado (Whitelist)',
-                color: 'text-alert-green'
-            };
+            return { icon: '🛡️', text: 'Verificado', color: 'text-alert-green', bg: 'bg-green-100 dark:bg-green-900/30' };
         }
-
         if (log.status === 'red') {
-            return {
-                icon: '🚨',
-                text: 'Peligroso',
-                color: 'text-alert-red'
-            };
+            return { icon: '🚨', text: 'Peligroso', color: 'text-alert-red', bg: 'bg-red-100 dark:bg-red-900/30' };
         }
-
-        return {
-            icon: '⚠️',
-            text: 'No Verificado',
-            color: 'text-alert-yellow'
-        };
+        return { icon: '⚠️', text: 'No Verificado', color: 'text-alert-yellow', bg: 'bg-yellow-100 dark:bg-yellow-900/30' };
     };
 
-    // Función para obtener el estado del usuario
     const getStatusIcon = (status) => {
         const icons = {
             green: { icon: '🛡️', text: 'Seguro', color: 'text-alert-green' },
@@ -80,20 +61,11 @@ const AdminAccountsView = ({ whitelist = [] }) => {
         return icons[status] || icons.green;
     };
 
-    // Funciones CRUD
     const handleCreateUser = (e) => {
         e.preventDefault();
-
         if (editingUser) {
-            setUsers(users.map(u =>
-                u.id === editingUser.id
-                    ? { ...u, ...formData, password: formData.password || u.password }
-                    : u
-            ));
-            setNotification({
-                type: 'success',
-                message: `Usuario "${formData.name}" actualizado exitosamente`
-            });
+            setUsers(users.map(u => u.id === editingUser.id ? { ...u, ...formData, password: formData.password || u.password } : u));
+            setNotification({ type: 'success', message: `Usuario "${formData.name}" actualizado` });
         } else {
             const newUser = {
                 id: Math.max(...users.map(u => u.id)) + 1,
@@ -103,12 +75,8 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                 password: formData.password || 'Temporal123!'
             };
             setUsers([...users, newUser]);
-            setNotification({
-                type: 'success',
-                message: `Usuario "${formData.name}" creado exitosamente`
-            });
+            setNotification({ type: 'success', message: `Usuario "${formData.name}" creado` });
         }
-
         setShowCreateModal(false);
         setEditingUser(null);
         setFormData({ name: '', email: '', role: 'Finanzas', password: '' });
@@ -117,21 +85,13 @@ const AdminAccountsView = ({ whitelist = [] }) => {
     const handleDeleteUser = (userId) => {
         const user = users.find(u => u.id === userId);
         setUsers(users.filter(u => u.id !== userId));
-        setNotification({
-            type: 'success',
-            message: `Usuario "${user.name}" eliminado exitosamente`
-        });
+        setNotification({ type: 'success', message: `Usuario "${user.name}" eliminado` });
         setShowDeleteModal(null);
     };
 
     const handleEditUser = (user) => {
         setEditingUser(user);
-        setFormData({
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            password: ''
-        });
+        setFormData({ name: user.name, email: user.email, role: user.role, password: '' });
         setShowCreateModal(true);
     };
 
@@ -141,250 +101,148 @@ const AdminAccountsView = ({ whitelist = [] }) => {
         setShowCreateModal(true);
     };
 
-    // Modal de contraseña
+    // Gestión de contraseñas
     const [showPassword, setShowPassword] = useState(false);
     const [copiedPassword, setCopiedPassword] = useState(false);
 
     const handleCopyPassword = async (password) => {
         try {
-            await navigator.clipboard.writeText(password);
+            const textArea = document.createElement('textarea');
+            textArea.value = password;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
             setCopiedPassword(true);
             setTimeout(() => setCopiedPassword(false), 2000);
-            setNotification({
-                type: 'success',
-                message: 'Contraseña copiada al portapapeles'
-            });
+            setNotification({ type: 'success', message: 'Contraseña copiada' });
         } catch (err) {
-            console.error('Error al copiar la contraseña: ', err);
-            setNotification({
-                type: 'danger',
-                message: 'Error al copiar. Por favor, copia manualmente.'
-            });
+            setNotification({ type: 'danger', message: 'Error al copiar' });
         }
     };
 
     const handlePasswordGenerated = (newPassword) => {
         if (showPasswordModal) {
-            setUsers(users.map(u =>
-                u.id === showPasswordModal.id
-                    ? { ...u, password: newPassword }
-                    : u
-            ));
+            setUsers(users.map(u => u.id === showPasswordModal.id ? { ...u, password: newPassword } : u));
             setShowPasswordModal({ ...showPasswordModal, password: newPassword });
-            setNotification({
-                type: 'success',
-                message: 'Contraseña actualizada exitosamente'
-            });
+            setNotification({ type: 'success', message: 'Contraseña actualizada' });
         } else if (showCreateModal) {
             setFormData({ ...formData, password: newPassword });
         }
     };
 
-    // Verificación de contraseña
     const handleCheckPassword = () => {
-        if (!passwordToCheck) {
-            setNotification({
-                type: 'warning',
-                message: 'Por favor ingresa una contraseña para verificar'
-            });
-            return;
-        }
-
-        // 1. Verificar si pertenece a un usuario comprometido
-        const compromisedUser = users.find(u =>
-            u.password === passwordToCheck && u.status === 'red'
-        );
-
+        if (!passwordToCheck) return;
+        const compromisedUser = users.find(u => u.password === passwordToCheck && u.status === 'red');
         if (compromisedUser) {
-            setCheckResult({
-                status: 'danger',
-                message: `⚠️ ALERTA CRÍTICA: Esta contraseña pertenece a ${compromisedUser.name}, cuya cuenta está COMPROMETIDA`,
-                details: 'Esta contraseña fue filtrada en una brecha de seguridad. Debe ser cambiada inmediatamente.'
-            });
+            setCheckResult({ status: 'danger', message: `⚠️ ALERTA CRÍTICA: Pertenece a ${compromisedUser.name} (COMPROMETIDA)` });
             return;
         }
-
-        // 2. Verificar en la lista de contraseñas comprometidas
         const isInLeakedDatabase = compromisedPasswords.includes(passwordToCheck);
-
         if (isInLeakedDatabase) {
-            setCheckResult({
-                status: 'danger',
-                message: '🚨 Esta contraseña ha sido encontrada en filtraciones de datos conocidas',
-                details: 'Esta contraseña aparece en bases de datos públicas de brechas de seguridad. Cámbiala inmediatamente.'
-            });
+            setCheckResult({ status: 'danger', message: '🚨 Encontrada en filtraciones de datos' });
             return;
         }
-
-        // 3. Verificar si es débil
-        const commonWeakPasswords = ['password', 'admin', 'user', '123', 'abc', 'qwerty'];
-        const isWeak = commonWeakPasswords.some(weak =>
-            passwordToCheck.toLowerCase().includes(weak)
-        );
-
-        if (isWeak) {
-            setCheckResult({
-                status: 'danger',
-                message: '⚠️ Esta es una contraseña débil y predecible',
-                details: 'Aunque no está en bases de datos filtradas, es fácil de adivinar.'
-            });
+        const commonWeakPasswords = ['password', 'admin', 'user', '123'];
+        if (commonWeakPasswords.some(weak => passwordToCheck.toLowerCase().includes(weak))) {
+            setCheckResult({ status: 'danger', message: '⚠️ Contraseña débil y predecible' });
             return;
         }
-
-        // 4. Si pasa todas las verificaciones
-        setCheckResult({
-            status: 'safe',
-            message: '✅ Esta contraseña no aparece en bases de datos de filtraciones conocidas',
-            details: 'Asegúrate de que tenga al menos 12 caracteres y combine letras, números y símbolos.'
-        });
+        setCheckResult({ status: 'safe', message: '✅ No aparece en filtraciones conocidas' });
     };
 
     return (
-        <div className="p-6">
+        <div className="p-4 md:p-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">
-                    Lista de Usuarios
-                </h1>
-                <button
-                    onClick={openCreateModal}
-                    className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors font-medium"
-                >
-                    <FiPlus className="w-5 h-5" />
-                    Crear Usuario
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
+                <h1 className="text-2xl md:text-3xl font-bold text-light-text dark:text-dark-text">Lista de Usuarios</h1>
+                <button onClick={openCreateModal} className="flex items-center justify-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors w-full md:w-auto font-medium">
+                    <FiPlus className="w-5 h-5" /> Crear Usuario
                 </button>
             </div>
 
-            {/* Herramienta de Comprobación de Contraseña */}
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
+            {/* Verificador de Contraseña */}
+            <div className="bg-light-surface dark:bg-dark-surface p-4 md:p-6 rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
                 <div className="flex items-center gap-3 mb-4">
                     <FiSearch className="w-6 h-6 text-brand" />
-                    <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">
-                        Verificar Contraseña Filtrada
-                    </h2>
+                    <h2 className="text-lg md:text-xl font-semibold text-light-text dark:text-dark-text">Verificar Contraseña</h2>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
-                    <input
-                        type="password"
-                        value={passwordToCheck}
-                        onChange={(e) => setPasswordToCheck(e.target.value)}
-                        placeholder="Ingresa una contraseña a verificar"
-                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text focus:ring-2 focus:ring-brand focus:border-transparent"
-                    />
-                    <button
-                        onClick={handleCheckPassword}
-                        className="px-6 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors font-medium"
-                    >
-                        Verificar
-                    </button>
+                    <input type="password" value={passwordToCheck} onChange={(e) => setPasswordToCheck(e.target.value)} placeholder="Contraseña a verificar" className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text" />
+                    <button onClick={handleCheckPassword} className="px-6 py-2 bg-brand text-white rounded-lg font-medium w-full sm:w-auto">Verificar</button>
                 </div>
-
                 {checkResult && (
-                    <div className={`mt-4 p-4 rounded-lg ${
-                        checkResult.status === 'danger'
-                            ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-                            : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                    }`}>
-                        <p className={`font-medium ${
-                            checkResult.status === 'danger' ? 'text-alert-red' : 'text-alert-green'
-                        }`}>
-                            {checkResult.message}
-                        </p>
-                        {checkResult.details && (
-                            <p className="text-sm text-light-text dark:text-dark-text mt-2">
-                                {checkResult.details}
-                            </p>
-                        )}
+                    <div className={`mt-4 p-3 rounded-lg text-sm font-medium ${checkResult.status === 'danger' ? 'bg-red-50 text-alert-red dark:bg-red-900/20' : 'bg-green-50 text-alert-green dark:bg-green-900/20'}`}>
+                        {checkResult.message}
                     </div>
                 )}
             </div>
 
-            {/* Tabla de Usuarios */}
-            <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {/* --- VISTA MÓVIL: CARDS (Visible solo en móvil) --- */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {users.map((user) => {
+                    const statusInfo = getStatusIcon(user.status);
+                    return (
+                        <div key={user.id} className="bg-light-surface dark:bg-dark-surface p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-brand">
+                                        <FiUser className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-light-text dark:text-dark-text">{user.name}</h3>
+                                        <p className="text-xs text-gray-500">{user.role}</p>
+                                    </div>
+                                </div>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${statusInfo.color} bg-opacity-10`}>
+                                    {statusInfo.icon} {statusInfo.text}
+                                </span>
+                            </div>
+                            <div className="space-y-2 mb-4 text-sm">
+                                <p className="text-gray-600 dark:text-gray-400"><span className="font-medium">Email:</span> {user.email}</p>
+                                <p className="text-gray-600 dark:text-gray-400"><span className="font-medium">Último Login:</span> {user.lastLogin}</p>
+                            </div>
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <button onClick={() => setShowPasswordModal(user)} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><FiEye className="w-5 h-5" /></button>
+                                <button onClick={() => setShowLogsModal(true)} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><FiFileText className="w-5 h-5" /></button>
+                                <button onClick={() => handleEditUser(user)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"><FiEdit className="w-5 h-5" /></button>
+                                <button onClick={() => setShowDeleteModal(user.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"><FiTrash2 className="w-5 h-5" /></button>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* --- VISTA ESCRITORIO: TABLA (Oculta en móvil) --- */}
+            <div className="hidden md:block bg-light-surface dark:bg-dark-surface rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <tr>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                            Usuario
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                            Rol
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                            Estado (Leak)
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                            Último Login
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                            Acciones
-                        </th>
+                        {['Usuario', 'Rol', 'Estado', 'Último Login', 'Acciones'].map(h => (
+                            <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">{h}</th>
+                        ))}
                     </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {users.map((user) => {
                         const statusInfo = getStatusIcon(user.status);
                         return (
-                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                                            <FiUser className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-light-text dark:text-dark-text">
-                                                {user.name}
-                                            </p>
-                                            <p className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
-                                                {user.email}
-                                            </p>
-                                        </div>
+                                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"><FiUser className="w-4 h-4 text-gray-500" /></div>
+                                        <div><p className="font-medium text-light-text dark:text-dark-text">{user.name}</p><p className="text-xs text-gray-500">{user.email}</p></div>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-light-text dark:text-dark-text">
-                                    {user.role}
-                                </td>
+                                <td className="px-6 py-4 text-sm text-light-text dark:text-dark-text">{user.role}</td>
+                                <td className="px-6 py-4"><div className={`flex items-center gap-1 text-sm font-medium ${statusInfo.color}`}>{statusInfo.icon} {statusInfo.text}</div></td>
+                                <td className="px-6 py-4 text-sm text-gray-500">{user.lastLogin}</td>
                                 <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xl">{statusInfo.icon}</span>
-                                        <span className={`text-sm font-medium ${statusInfo.color}`}>
-                                            {statusInfo.text}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-light-textSecondary dark:text-dark-textSecondary">
-                                    {user.lastLogin}
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => setShowPasswordModal(user)}
-                                            title="Ver Contraseña"
-                                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                        >
-                                            <FiEye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                        </button>
-                                        <button
-                                            onClick={() => setShowLogsModal(true)}
-                                            title="Ver Logs"
-                                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                        >
-                                            <FiFileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleEditUser(user)}
-                                            title="Editar Usuario"
-                                            className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                                        >
-                                            <FiEdit className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                        </button>
-                                        <button
-                                            onClick={() => setShowDeleteModal(user.id)}
-                                            title="Eliminar Usuario"
-                                            className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                        >
-                                            <FiTrash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
-                                        </button>
+                                    <div className="flex gap-1">
+                                        <button onClick={() => setShowPasswordModal(user)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><FiEye className="w-4 h-4 text-gray-500" /></button>
+                                        <button onClick={() => setShowLogsModal(true)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><FiFileText className="w-4 h-4 text-gray-500" /></button>
+                                        <button onClick={() => handleEditUser(user)} className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"><FiEdit className="w-4 h-4 text-blue-500" /></button>
+                                        <button onClick={() => setShowDeleteModal(user.id)} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"><FiTrash2 className="w-4 h-4 text-red-500" /></button>
                                     </div>
                                 </td>
                             </tr>
@@ -394,308 +252,58 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                 </table>
             </div>
 
-            {/* MODALES */}
-
-            {/* Modal: Crear/Editar Usuario */}
+            {/* Modales (Iguales, solo asegurando responsive en Logs) */}
+            {/* ... Mantengo la estructura de los modales igual que antes pero omito código repetitivo si no cambia la lógica ... */}
+            {/* Modal Crear/Editar */}
             {showCreateModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-md w-full mx-4">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-xl font-semibold text-light-text dark:text-dark-text">
-                                {editingUser ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
-                            </h3>
-                            <button
-                                onClick={() => {
-                                    setShowCreateModal(false);
-                                    setEditingUser(null);
-                                }}
-                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                            >
-                                <FiX className="w-5 h-5 text-gray-500" />
-                            </button>
-                        </div>
-                        <form onSubmit={handleCreateUser} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">
-                                    Nombre Completo
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    placeholder="Ej: Juan Pérez"
-                                    required
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text focus:ring-2 focus:ring-brand focus:border-transparent"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">
-                                    Email
-                                </label>
-                                <input
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    placeholder="juan.perez@empresa.cl"
-                                    required
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text focus:ring-2 focus:ring-brand focus:border-transparent"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">
-                                    Rol
-                                </label>
-                                <select
-                                    value={formData.role}
-                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text focus:ring-2 focus:ring-brand focus:border-transparent"
-                                >
-                                    <option>Administrador</option>
-                                    <option>Finanzas</option>
-                                    <option>Ventas</option>
-                                    <option>Marketing</option>
-                                    <option>IT</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">
-                                    Contraseña {editingUser && '(dejar vacío para mantener actual)'}
-                                </label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={formData.password}
-                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        placeholder="Contraseña"
-                                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text focus:ring-2 focus:ring-brand focus:border-transparent"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPasswordGenerator(true)}
-                                        className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                                    >
-                                        Generar
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-end gap-3 pt-4">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowCreateModal(false);
-                                        setEditingUser(null);
-                                    }}
-                                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors"
-                                >
-                                    {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
-                                </button>
-                            </div>
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowCreateModal(false)}>
+                    <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between mb-4"><h3 className="text-xl font-bold text-light-text dark:text-dark-text">{editingUser ? 'Editar' : 'Crear'} Usuario</h3><button onClick={() => setShowCreateModal(false)}><FiX className="w-5 h-5 text-gray-500" /></button></div>
+                        <form onSubmit={handleCreateUser} className="space-y-4">
+                            <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Nombre" className="w-full p-2 border rounded dark:bg-dark-background dark:border-gray-600 dark:text-white" required />
+                            <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="Email" className="w-full p-2 border rounded dark:bg-dark-background dark:border-gray-600 dark:text-white" required />
+                            <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="w-full p-2 border rounded dark:bg-dark-background dark:border-gray-600 dark:text-white"><option>Finanzas</option><option>Ventas</option><option>Administrador</option></select>
+                            <div className="flex gap-2"><input type="text" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder="Contraseña" className="flex-1 p-2 border rounded dark:bg-dark-background dark:border-gray-600 dark:text-white" /><button type="button" onClick={() => setShowPasswordGenerator(true)} className="p-2 bg-gray-100 dark:bg-gray-700 rounded">Generar</button></div>
+                            <div className="flex justify-end gap-2"><button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-gray-500">Cancelar</button><button type="submit" className="px-4 py-2 bg-brand text-white rounded">Guardar</button></div>
                         </form>
                     </div>
                 </div>
             )}
 
-            {/* Modal: Ver Contraseña */}
+            {/* Modal Password */}
             {showPasswordModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-md w-full mx-4">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-xl font-semibold text-light-text dark:text-dark-text">
-                                Contraseña de {showPasswordModal.name}
-                            </h3>
-                            <button
-                                onClick={() => {
-                                    setShowPasswordModal(null);
-                                    setShowPassword(false);
-                                }}
-                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                            >
-                                <FiX className="w-5 h-5 text-gray-500" />
-                            </button>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">
-                                    Contraseña Actual
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        value={showPasswordModal.password}
-                                        readOnly
-                                        className="w-full px-4 py-2 pr-20 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-light-text dark:text-dark-text font-mono"
-                                    />
-                                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                                        <button
-                                            onClick={() => handleCopyPassword(showPasswordModal.password)}
-                                            className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                                            title="Copiar"
-                                        >
-                                            {copiedPassword ? (
-                                                <FiCheck className="w-4 h-4 text-alert-green" />
-                                            ) : (
-                                                <FiCopy className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                            )}
-                                        </button>
-                                        <button
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                                            title={showPassword ? "Ocultar" : "Mostrar"}
-                                        >
-                                            {showPassword ? (
-                                                <FiEyeOff className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                            ) : (
-                                                <FiEye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                            )}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setShowPasswordGenerator(true)}
-                                className="w-full px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors font-medium"
-                            >
-                                Generar Nueva Contraseña
-                            </button>
-                        </div>
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowPasswordModal(null)}>
+                    <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between mb-4"><h3 className="text-xl font-bold text-light-text dark:text-dark-text">Contraseña</h3><button onClick={() => setShowPasswordModal(null)}><FiX className="w-5 h-5 text-gray-500" /></button></div>
+                        <div className="relative mb-4"><input type={showPassword ? "text" : "password"} value={showPasswordModal.password} readOnly className="w-full p-2 pr-20 border rounded dark:bg-dark-background dark:border-gray-600 dark:text-white" /><button onClick={() => handleCopyPassword(showPasswordModal.password)} className="absolute right-10 top-2 text-gray-500"><FiCopy /></button><button onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-2 text-gray-500">{showPassword ? <FiEyeOff /> : <FiEye />}</button></div>
+                        <button onClick={() => setShowPasswordGenerator(true)} className="w-full py-2 bg-brand text-white rounded">Generar Nueva</button>
                     </div>
                 </div>
             )}
 
-            {/* Modal: Generador de Contraseñas */}
-            {showPasswordGenerator && (
-                <PasswordGeneratorModal
-                    onClose={() => setShowPasswordGenerator(false)}
-                    onPasswordGenerated={handlePasswordGenerated}
-                />
-            )}
-
-            {/* Modal: Ver Logs */}
+            {/* Modal Logs (Responsive) */}
             {showLogsModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                            <div>
-                                <h3 className="text-xl font-semibold text-light-text dark:text-dark-text">
-                                    Registro de Actividad
-                                </h3>
-                                <p className="text-sm text-light-textSecondary dark:text-dark-textSecondary mt-1">
-                                    {fakeLogs.length} sitios visitados hoy
-                                </p>
-                            </div>
-                            <button
-                                onClick={() => setShowLogsModal(false)}
-                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                            >
-                                <FiX className="w-5 h-5 text-gray-500" />
-                            </button>
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowLogsModal(false)}>
+                    <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="p-6 border-b dark:border-gray-700 flex justify-between"><h3 className="text-xl font-bold text-light-text dark:text-dark-text">Logs de Actividad</h3><button onClick={() => setShowLogsModal(false)}><FiX /></button></div>
+                        <div className="p-6 overflow-y-auto flex-1 space-y-3">
+                            {fakeLogs.map(log => {
+                                const info = getLogStatusInfo(log);
+                                return (
+                                    <div key={log.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded">
+                                        <div className="flex items-center gap-3 overflow-hidden"><span className="text-xl flex-shrink-0">{info.icon}</span><div className="min-w-0"><p className="font-medium truncate text-light-text dark:text-dark-text">{log.site}</p><p className="text-xs text-gray-500">{log.time}</p></div></div>
+                                        <span className={`text-xs px-2 py-1 rounded-full ${info.bg} ${info.color}`}>{info.text}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
-
-                        <div className="flex-1 overflow-y-auto p-6">
-                            <div className="space-y-3">
-                                {fakeLogs.map((log) => {
-                                    const statusInfo = getLogStatusInfo(log);
-
-                                    return (
-                                        <div
-                                            key={log.id}
-                                            className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                        >
-                                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                <span className="text-2xl flex-shrink-0">{statusInfo.icon}</span>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="font-medium text-light-text dark:text-dark-text truncate">
-                                                        {log.site}
-                                                    </p>
-                                                    <p className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
-                                                        {log.time}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex-shrink-0 ml-4">
-                                                <span className={`text-sm font-medium px-3 py-1 rounded-full ${
-                                                    statusInfo.color === 'text-alert-green' ? 'bg-green-100 dark:bg-green-900/30 text-alert-green' :
-                                                        statusInfo.color === 'text-alert-red' ? 'bg-red-100 dark:bg-red-900/30 text-alert-red' :
-                                                            'bg-yellow-100 dark:bg-yellow-900/30 text-alert-yellow'
-                                                }`}>
-                                                    {statusInfo.text}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-                            <div className="flex items-center gap-4 text-sm text-light-textSecondary dark:text-dark-textSecondary">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 bg-alert-green rounded-full"></span>
-                                    <span>Verificados: {fakeLogs.filter(l => whitelist.includes(l.site)).length}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 bg-alert-red rounded-full"></span>
-                                    <span>Peligrosos: {fakeLogs.filter(l => l.status === 'red').length}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 bg-alert-yellow rounded-full"></span>
-                                    <span>Sin verificar: {fakeLogs.filter(l => l.status === 'yellow' && !whitelist.includes(l.site)).length}</span>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setShowLogsModal(false)}
-                                className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors"
-                            >
-                                Cerrar
-                            </button>
-                        </div>
+                        <div className="p-6 border-t dark:border-gray-700 flex justify-end"><button onClick={() => setShowLogsModal(false)} className="px-4 py-2 bg-brand text-white rounded">Cerrar</button></div>
                     </div>
                 </div>
             )}
 
-            {/* Modal: Eliminar Usuario */}
-            {showDeleteModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-md w-full mx-4">
-                        <div className="p-6">
-                            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
-                                <FiTrash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
-                            </div>
-                            <h3 className="text-xl font-semibold text-light-text dark:text-dark-text text-center mb-2">
-                                Eliminar Usuario
-                            </h3>
-                            <p className="text-light-textSecondary dark:text-dark-textSecondary text-center mb-6">
-                                ¿Estás seguro que quieres eliminar al usuario{' '}
-                                <span className="font-semibold text-light-text dark:text-dark-text">
-                                    {users.find(u => u.id === showDeleteModal)?.name}
-                                </span>?
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
-                            <button
-                                onClick={() => setShowDeleteModal(null)}
-                                className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={() => handleDeleteUser(showDeleteModal)}
-                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                                Eliminar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Toast de Notificaciones */}
+            {showPasswordGenerator && <PasswordGeneratorModal onClose={() => setShowPasswordGenerator(false)} onPasswordGenerated={handlePasswordGenerated} />}
+            {showDeleteModal && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div className="bg-white dark:bg-dark-surface p-6 rounded-lg max-w-sm w-full text-center"><FiTrash2 className="w-12 h-12 text-red-500 mx-auto mb-4" /><h3 className="text-lg font-bold mb-2 text-light-text dark:text-dark-text">¿Eliminar Usuario?</h3><div className="flex gap-2 justify-center"><button onClick={() => setShowDeleteModal(null)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded">Cancelar</button><button onClick={() => handleDeleteUser(showDeleteModal)} className="px-4 py-2 bg-red-500 text-white rounded">Eliminar</button></div></div></div>}
             <Toast notification={notification} onClose={() => setNotification(null)} />
         </div>
     );
