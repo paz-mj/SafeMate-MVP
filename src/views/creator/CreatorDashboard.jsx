@@ -10,6 +10,8 @@ import DeleteConfirmModal from './DeleteConfirmModal';
 import { fakeCreatorAccounts } from '../../data/fakeCreatorData';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import VerifyPasswordView from '../common/VerifyPasswordView';
+import Toast from '../../views/common/Toast'; // --- NUEVO ---
+
 // --- Vista de Cuentas (Accounts) ---
 const AccountsView = ({
                           accounts,
@@ -23,14 +25,16 @@ const AccountsView = ({
         <div className="p-6">
             {/* Header */}
             <div className="mb-8">
-                <div className="flex items-center justify-between mb-2">
+                {/* --- MODIFICADO: Header apilable --- */}
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-2 gap-4 md:gap-2">
                     <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">
-                        Pinned Accounts
+                        Cuentas Conectadas
                     </h1>
-                    <div className="flex items-center gap-3">
+                    {/* --- MODIFICADO: Botones apilables --- */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                         <button
                             onClick={onToggleDeleteMode}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${
+                            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium w-full sm:w-auto ${
                                 isDeleteMode
                                     ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/30'
                                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -41,7 +45,7 @@ const AccountsView = ({
                         </button>
                         <button
                             onClick={onCreateAccount}
-                            className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium"
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium w-full sm:w-auto"
                         >
                             <FiPlus className="w-5 h-5" />
                             Agregar Red Social
@@ -49,10 +53,11 @@ const AccountsView = ({
                     </div>
                 </div>
                 <p className="text-light-textSecondary dark:text-dark-textSecondary">
-                    Monitor and manage your connected social media accounts.
+                    Supervisa y gestiona tus cuentas de redes sociales conectadas.
                 </p>
             </div>
 
+            {/* ... (Resto del componente AccountsView se mantiene igual) ... */}
             {/* Mensaje cuando no hay cuentas */}
             {accounts.length === 0 ? (
                 <div className="text-center py-16">
@@ -98,6 +103,7 @@ const CreatorDashboard = (props) => {
     const [showAllNotifications, setShowAllNotifications] = useState(false);
     const [accounts, setAccounts] = useState(fakeCreatorAccounts);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
+    const [notification, setNotification] = useState(null); // --- NUEVO ---
 
     // Estados de modales
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -109,6 +115,11 @@ const CreatorDashboard = (props) => {
     const handleCreateAccount = (newAccount) => {
         setAccounts([...accounts, newAccount]);
         setShowCreateModal(false);
+        // --- NUEVO: Notificación ---
+        setNotification({
+            type: 'success',
+            message: `Cuenta "${newAccount.platform}" agregada con éxito`
+        });
     };
 
     // ✅ Eliminar cuenta
@@ -119,6 +130,11 @@ const CreatorDashboard = (props) => {
 
     const confirmDelete = () => {
         setAccounts(accounts.filter(a => a.id !== accountToDelete.id));
+        // --- NUEVO: Notificación ---
+        setNotification({
+            type: 'success',
+            message: `Cuenta "${accountToDelete.platform}" eliminada`
+        });
         setAccountToDelete(null);
         setIsDeleteMode(false);
     };
@@ -130,15 +146,22 @@ const CreatorDashboard = (props) => {
     };
 
     const handlePasswordGenerated = (newPassword) => {
-        setAccounts(accounts.map(account =>
-            account.id === selectedAccountId
-                ? { ...account, password: newPassword }
-                : account
+        const account = accounts.find(a => a.id === selectedAccountId);
+        setAccounts(accounts.map(acc =>
+            acc.id === selectedAccountId
+                ? { ...acc, password: newPassword }
+                : acc
         ));
+        // --- NUEVO: Notificación ---
+        setNotification({
+            type: 'success',
+            message: `Contraseña de "${account.platform}" actualizada`
+        });
         setShowPasswordGenerator(false);
         setSelectedAccountId(null);
     };
 
+    // ... (renderView y getViewTitle se mantienen igual) ...
     // ✅ Renderizar vista actual
     const renderView = () => {
         switch (currentView) {
@@ -196,6 +219,9 @@ const CreatorDashboard = (props) => {
             >
                 {renderView()}
             </DashboardLayout>
+
+            {/* --- NUEVO: Toast --- */}
+            <Toast notification={notification} onClose={() => setNotification(null)} />
 
             {/* Modales */}
             {showAllNotifications && (

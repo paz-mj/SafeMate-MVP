@@ -1,10 +1,10 @@
 // src/components/layout/Topbar.jsx
 import { useState, useRef, useEffect } from 'react';
-import { LuSun, LuMoon, LuBell, LuUser, LuSettings, LuLogOut } from 'react-icons/lu';
-import { fakeNotifications } from '../../data/fakeData';
-import UserProfileModal from '../../views/common/UserProfileModal';
+import { LuSun, LuMoon, LuBell, LuUser, LuSettings, LuLogOut, LuMenu } from 'react-icons/lu';
+import { fakeNotifications } from '../../data/fakeData.js';
+import UserProfileModal from '../../views/common/UserProfileModal.jsx';
 
-const Topbar = ({ viewTitle, isDark, toggleDarkMode, handleLogout, onViewAllNotificationsClick }) => {
+const Topbar = ({ viewTitle, isDark, toggleDarkMode, handleLogout, onViewAllNotificationsClick, onMenuClick }) => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showProfileModal, setShowProfileModal] = useState(false);
@@ -38,15 +38,28 @@ const Topbar = ({ viewTitle, isDark, toggleDarkMode, handleLogout, onViewAllNoti
 
     return (
         <>
-            <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-800 px-6 py-4 transition-colors duration-300">
+            <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-800 px-4 md:px-6 py-4 transition-colors duration-300">
                 <div className="flex items-center justify-between">
-                    {/* Título de la Vista */}
-                    <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                        {viewTitle}
-                    </h2>
+
+                    {/* Título de la Vista (con botón de menú) */}
+                    <div className="flex items-center gap-3">
+                        {/* Botón de Menú (solo en móvil) */}
+                        <button
+                            onClick={onMenuClick}
+                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors lg:hidden"
+                            aria-label="Abrir menú"
+                        >
+                            <LuMenu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                        </button>
+
+                        {/* Tamaño de texto adaptable */}
+                        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white truncate max-w-[200px] md:max-w-none">
+                            {viewTitle}
+                        </h2>
+                    </div>
 
                     {/* Acciones de Usuario */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 md:gap-4">
                         {/* Toggle Dark Mode */}
                         <button
                             onClick={toggleDarkMode}
@@ -73,7 +86,7 @@ const Topbar = ({ viewTitle, isDark, toggleDarkMode, handleLogout, onViewAllNoti
 
                             {/* Dropdown de Notificaciones */}
                             {showNotifications && (
-                                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-dark-surface rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                                <div className="absolute right-0 mt-2 w-[76vw] sm:w-80 bg-white dark:bg-dark-surface rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
                                     <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                                         <h3 className="font-semibold text-gray-900 dark:text-white">Notificaciones</h3>
                                     </div>

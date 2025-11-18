@@ -14,8 +14,8 @@ const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) 
             { name: 'Asistente Chatbot', icon: FiMessageSquare, view: 'chatbot' }
         ],
         creator: [
-            { name: 'Accounts', icon: FiHome, view: 'accounts' },
-            { name: 'Security', icon: FiShield, view: 'security' },
+            { name: 'Cuentas', icon: FiHome, view: 'accounts' },
+            { name: 'Seguridad', icon: FiShield, view: 'security' },
             { name: 'Asistente Chatbot', icon: FiMessageSquare, view: 'chatbot' }
         ]
     };
