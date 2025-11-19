@@ -1,27 +1,26 @@
-// src/views/creator/CreatorDashboard.jsx - VERSIÓN CORREGIDA Y ACTUALIZADA
+// src/views/creator/CreatorDashboard.jsx - VERSIÓN CON MODAL
 import { useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import NotificationsModal from '../common/NotificationsModal';
 import ChatbotView from '../common/ChatbotView';
 import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
 import AccountCard from './AccountCard';
+import AccountModal from './AccountModal'; // ✅ NUEVO IMPORT
 import CreateAccountModal from './CreateAccountModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
-import BrandProtectionView from './BrandProteccionView.jsx'; // ✅ NUEVO
-import SecureVaultView from './SecureVaultView'; // ✅ NUEVO
+import BrandProtectionView from './BrandProteccionView.jsx';
+import SecureVaultView from './SecureVaultView';
 import { fakeCreatorAccounts } from '../../data/fakeCreatorData';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import Toast from '../common/Toast';
 
 const AccountsView = ({
                           accounts,
-                          onUpdatePassword,
                           onDeleteAccount,
                           isDeleteMode,
                           onToggleDeleteMode,
                           onCreateAccount,
-                          expandedCards,
-                          onToggleCard
+                          onViewDetails // ✅ NUEVA PROP
                       }) => {
     return (
         <div className="p-6">
@@ -76,16 +75,14 @@ const AccountsView = ({
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {accounts.map((account) => (
                         <AccountCard
                             key={account.id}
                             account={account}
-                            onUpdate={onUpdatePassword}
+                            onViewDetails={onViewDetails} // ✅ PASAMOS LA FUNCIÓN
                             onDelete={onDeleteAccount}
                             isDeleteMode={isDeleteMode}
-                            isExpanded={expandedCards.includes(account.id)}
-                            onToggleExpand={onToggleCard}
                         />
                     ))}
                 </div>
@@ -100,18 +97,15 @@ const CreatorDashboard = (props) => {
     const [accounts, setAccounts] = useState(fakeCreatorAccounts);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [notification, setNotification] = useState(null);
-    const [expandedCards, setExpandedCards] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showPasswordGenerator, setShowPasswordGenerator] = useState(false);
     const [selectedAccountId, setSelectedAccountId] = useState(null);
     const [accountToDelete, setAccountToDelete] = useState(null);
+    const [selectedAccount, setSelectedAccount] = useState(null); // ✅ NUEVO ESTADO
 
-    const handleToggleCard = (accountId) => {
-        setExpandedCards(prev =>
-            prev.includes(accountId)
-                ? prev.filter(id => id !== accountId)
-                : [...prev, accountId]
-        );
+    // ✅ NUEVA FUNCIÓN: Abrir modal de detalles
+    const handleViewDetails = (account) => {
+        setSelectedAccount(account);
     };
 
     const handleCreateAccount = (newAccount) => {
@@ -130,7 +124,6 @@ const CreatorDashboard = (props) => {
 
     const confirmDelete = () => {
         setAccounts(accounts.filter(a => a.id !== accountToDelete.id));
-        setExpandedCards(prev => prev.filter(id => id !== accountToDelete.id));
         setNotification({
             type: 'success',
             message: `Cuenta "${accountToDelete.platform}" eliminada`
@@ -141,6 +134,7 @@ const CreatorDashboard = (props) => {
 
     const handleUpdatePassword = (accountId) => {
         setSelectedAccountId(accountId);
+        setSelectedAccount(null); // ✅ Cerrar modal de detalles
         setShowPasswordGenerator(true);
     };
 
@@ -159,7 +153,6 @@ const CreatorDashboard = (props) => {
         setSelectedAccountId(null);
     };
 
-    // ✅ CORRECCIÓN: Switch actualizado con nuevas vistas
     const renderView = () => {
         switch (currentView) {
             case 'accounts':
@@ -171,13 +164,12 @@ const CreatorDashboard = (props) => {
                         isDeleteMode={isDeleteMode}
                         onToggleDeleteMode={() => setIsDeleteMode(!isDeleteMode)}
                         onCreateAccount={() => setShowCreateModal(true)}
-                        expandedCards={expandedCards}
-                        onToggleCard={handleToggleCard}
+                        onViewDetails={handleViewDetails} // ✅ PASAMOS LA FUNCIÓN
                     />
                 );
-            case 'brand_protection': // ✅ NUEVO
+            case 'brand_protection':
                 return <BrandProtectionView />;
-            case 'vault': // ✅ NUEVO
+            case 'vault':
                 return <SecureVaultView />;
             case 'chatbot':
                 return <ChatbotView />;
@@ -190,14 +182,12 @@ const CreatorDashboard = (props) => {
                         isDeleteMode={isDeleteMode}
                         onToggleDeleteMode={() => setIsDeleteMode(!isDeleteMode)}
                         onCreateAccount={() => setShowCreateModal(true)}
-                        expandedCards={expandedCards}
-                        onToggleCard={handleToggleCard}
+                        onViewDetails={handleViewDetails} // ✅ PASAMOS LA FUNCIÓN
                     />
                 );
         }
     };
 
-    // ✅ CORRECCIÓN: Títulos actualizados
     const getViewTitle = () => {
         switch (currentView) {
             case 'accounts':
@@ -255,6 +245,15 @@ const CreatorDashboard = (props) => {
                     account={accountToDelete}
                     onConfirm={confirmDelete}
                     onCancel={() => setAccountToDelete(null)}
+                />
+            )}
+
+            {/* ✅ NUEVO: Modal de Detalles de Cuenta */}
+            {selectedAccount && (
+                <AccountModal
+                    account={selectedAccount}
+                    onClose={() => setSelectedAccount(null)}
+                    onUpdatePassword={handleUpdatePassword}
                 />
             )}
         </>

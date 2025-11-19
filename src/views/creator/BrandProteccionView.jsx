@@ -1,4 +1,4 @@
-// src/views/creator/BrandProtectionView.jsx - NUEVO
+// src/views/creator/BrandProteccionView.jsx
 import { useState } from 'react';
 import {
     FiShield,
@@ -7,7 +7,14 @@ import {
     FiRefreshCw,
     FiAlertTriangle,
     FiCheckCircle,
-    FiXCircle
+    FiXCircle,
+    // ✅ NUEVOS ICONOS IMPORTADOS
+    FiInstagram,
+    FiTwitter,
+    FiYoutube,
+    FiLinkedin,
+    FiMusic, // Usaremos este para TikTok si no tienes FontAwesome instalado
+    FiGlobe
 } from 'react-icons/fi';
 import { fakeClones } from '../../data/fakeCreatorData';
 import Toast from '../common/Toast';
@@ -64,6 +71,19 @@ const BrandProtectionView = () => {
             type: 'success',
             message: actionMessages[action]
         });
+    };
+
+    // ✅ NUEVA FUNCIÓN: Obtener icono según plataforma
+    const getCloneIcon = (platform) => {
+        const p = platform.toLowerCase();
+        // Ajustamos colores y iconos
+        if (p.includes('instagram')) return <FiInstagram className="w-8 h-8 text-pink-600" />;
+        if (p.includes('tiktok')) return <FiMusic className="w-8 h-8 text-gray-900 dark:text-white" />;
+        if (p.includes('twitter') || p.includes('x')) return <FiTwitter className="w-8 h-8 text-blue-400" />;
+        if (p.includes('youtube')) return <FiYoutube className="w-8 h-8 text-red-600" />;
+        if (p.includes('linkedin')) return <FiLinkedin className="w-8 h-8 text-blue-700" />;
+
+        return <FiGlobe className="w-8 h-8 text-gray-500" />;
     };
 
     const getStatusBadge = (status) => {
@@ -136,7 +156,7 @@ const BrandProtectionView = () => {
             {/* Tab Content: Sello */}
             {activeTab === 'seal' && (
                 <div className="space-y-6">
-                    {/* Tarjeta del Sello */}
+                    {/* ... (El contenido del Sello se mantiene igual) ... */}
                     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 md:p-8 rounded-xl border-2 border-blue-200 dark:border-blue-800">
                         <div className="flex flex-col md:flex-row items-center gap-6">
                             <div className="w-24 h-24 bg-brand rounded-full flex items-center justify-center flex-shrink-0">
@@ -172,7 +192,6 @@ const BrandProtectionView = () => {
                         </div>
                     </div>
 
-                    {/* Link Público */}
                     <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-lg border border-gray-200 dark:border-gray-700">
                         <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4">
                             Link Público de Verificación
@@ -205,31 +224,12 @@ const BrandProtectionView = () => {
                             </button>
                         </div>
                     </div>
-
-                    {/* Estadísticas */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-light-surface dark:bg-dark-surface p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Verificaciones</p>
-                            <p className="text-2xl font-bold text-light-text dark:text-dark-text">1,247</p>
-                        </div>
-                        <div className="bg-light-surface dark:bg-dark-surface p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Clones Detectados</p>
-                            <p className="text-2xl font-bold text-light-text dark:text-dark-text">{clones.length}</p>
-                        </div>
-                        <div className="bg-light-surface dark:bg-dark-surface p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Reportados</p>
-                            <p className="text-2xl font-bold text-light-text dark:text-dark-text">
-                                {clones.filter(c => c.status === 'reported').length}
-                            </p>
-                        </div>
-                    </div>
                 </div>
             )}
 
             {/* Tab Content: Clones */}
             {activeTab === 'clones' && (
                 <div className="space-y-6">
-                    {/* Control de Escaneo */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-light-surface dark:bg-dark-surface p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                         <div>
                             <h3 className="text-lg font-semibold text-light-text dark:text-dark-text">
@@ -249,7 +249,6 @@ const BrandProtectionView = () => {
                         </button>
                     </div>
 
-                    {/* Lista de Clones */}
                     <div className="space-y-4">
                         {clones.map((clone) => (
                             <div
@@ -257,13 +256,12 @@ const BrandProtectionView = () => {
                                 className="bg-light-surface dark:bg-dark-surface p-4 md:p-6 rounded-lg border border-gray-200 dark:border-gray-700"
                             >
                                 <div className="flex flex-col md:flex-row gap-4">
-                                    {/* Avatar y Info */}
+                                    {/* Avatar y Info - ✅ MODIFICADO AQUÍ */}
                                     <div className="flex items-start gap-4 flex-1">
-                                        <img
-                                            src={clone.avatarUrl}
-                                            alt={clone.username}
-                                            className="w-16 h-16 rounded-full flex-shrink-0"
-                                        />
+                                        <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-200 dark:border-gray-700">
+                                            {getCloneIcon(clone.platform)}
+                                        </div>
+
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                                                 <h4 className="font-semibold text-light-text dark:text-dark-text truncate">
