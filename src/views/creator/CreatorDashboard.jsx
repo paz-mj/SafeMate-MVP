@@ -1,4 +1,4 @@
-// src/views/creator/CreatorDashboard.jsx - REFACTORIZADO COMPLETO
+// src/views/creator/CreatorDashboard.jsx - VERSIÓN CORREGIDA
 import { useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import NotificationsModal from '../common/NotificationsModal';
@@ -10,27 +10,25 @@ import DeleteConfirmModal from './DeleteConfirmModal';
 import { fakeCreatorAccounts } from '../../data/fakeCreatorData';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import VerifyPasswordView from '../common/VerifyPasswordView';
-import Toast from '../../views/common/Toast'; // --- NUEVO ---
+import Toast from '../common/Toast';
 
-// --- Vista de Cuentas (Accounts) ---
 const AccountsView = ({
                           accounts,
                           onUpdatePassword,
                           onDeleteAccount,
                           isDeleteMode,
                           onToggleDeleteMode,
-                          onCreateAccount
+                          onCreateAccount,
+                          expandedCards,
+                          onToggleCard
                       }) => {
     return (
         <div className="p-6">
-            {/* Header */}
             <div className="mb-8">
-                {/* --- MODIFICADO: Header apilable --- */}
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-2 gap-4 md:gap-2">
                     <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">
                         Cuentas Conectadas
                     </h1>
-                    {/* --- MODIFICADO: Botones apilables --- */}
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                         <button
                             onClick={onToggleDeleteMode}
@@ -57,8 +55,6 @@ const AccountsView = ({
                 </p>
             </div>
 
-            {/* ... (Resto del componente AccountsView se mantiene igual) ... */}
-            {/* Mensaje cuando no hay cuentas */}
             {accounts.length === 0 ? (
                 <div className="text-center py-16">
                     <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -79,7 +75,6 @@ const AccountsView = ({
                     </button>
                 </div>
             ) : (
-                /* Grid de Cuentas */
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {accounts.map((account) => (
                         <AccountCard
@@ -88,6 +83,8 @@ const AccountsView = ({
                             onUpdate={onUpdatePassword}
                             onDelete={onDeleteAccount}
                             isDeleteMode={isDeleteMode}
+                            isExpanded={expandedCards.includes(account.id)}
+                            onToggleExpand={onToggleCard}
                         />
                     ))}
                 </div>
@@ -96,33 +93,39 @@ const AccountsView = ({
     );
 };
 
-// --- Componente Principal ---
 const CreatorDashboard = (props) => {
-    // Estados principales
     const [currentView, setCurrentView] = useState('accounts');
     const [showAllNotifications, setShowAllNotifications] = useState(false);
     const [accounts, setAccounts] = useState(fakeCreatorAccounts);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
-    const [notification, setNotification] = useState(null); // --- NUEVO ---
+    const [notification, setNotification] = useState(null);
 
-    // Estados de modales
+    // ✅ CORRECCIÓN: Estado para manejar tarjetas expandidas individualmente
+    const [expandedCards, setExpandedCards] = useState([]);
+
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showPasswordGenerator, setShowPasswordGenerator] = useState(false);
     const [selectedAccountId, setSelectedAccountId] = useState(null);
     const [accountToDelete, setAccountToDelete] = useState(null);
 
-    // ✅ Crear nueva cuenta
+    // ✅ CORRECCIÓN: Función para toggle individual de tarjetas
+    const handleToggleCard = (accountId) => {
+        setExpandedCards(prev =>
+            prev.includes(accountId)
+                ? prev.filter(id => id !== accountId)
+                : [...prev, accountId]
+        );
+    };
+
     const handleCreateAccount = (newAccount) => {
         setAccounts([...accounts, newAccount]);
         setShowCreateModal(false);
-        // --- NUEVO: Notificación ---
         setNotification({
             type: 'success',
             message: `Cuenta "${newAccount.platform}" agregada con éxito`
         });
     };
 
-    // ✅ Eliminar cuenta
     const handleDeleteAccount = (accountId) => {
         const account = accounts.find(a => a.id === accountId);
         setAccountToDelete(account);
@@ -130,7 +133,8 @@ const CreatorDashboard = (props) => {
 
     const confirmDelete = () => {
         setAccounts(accounts.filter(a => a.id !== accountToDelete.id));
-        // --- NUEVO: Notificación ---
+        // También remover de tarjetas expandidas
+        setExpandedCards(prev => prev.filter(id => id !== accountToDelete.id));
         setNotification({
             type: 'success',
             message: `Cuenta "${accountToDelete.platform}" eliminada`
@@ -139,7 +143,6 @@ const CreatorDashboard = (props) => {
         setIsDeleteMode(false);
     };
 
-    // ✅ Actualizar contraseña
     const handleUpdatePassword = (accountId) => {
         setSelectedAccountId(accountId);
         setShowPasswordGenerator(true);
@@ -152,7 +155,6 @@ const CreatorDashboard = (props) => {
                 ? { ...acc, password: newPassword }
                 : acc
         ));
-        // --- NUEVO: Notificación ---
         setNotification({
             type: 'success',
             message: `Contraseña de "${account.platform}" actualizada`
@@ -161,8 +163,6 @@ const CreatorDashboard = (props) => {
         setSelectedAccountId(null);
     };
 
-    // ... (renderView y getViewTitle se mantienen igual) ...
-    // ✅ Renderizar vista actual
     const renderView = () => {
         switch (currentView) {
             case 'accounts':
@@ -174,6 +174,8 @@ const CreatorDashboard = (props) => {
                         isDeleteMode={isDeleteMode}
                         onToggleDeleteMode={() => setIsDeleteMode(!isDeleteMode)}
                         onCreateAccount={() => setShowCreateModal(true)}
+                        expandedCards={expandedCards}
+                        onToggleCard={handleToggleCard}
                     />
                 );
             case 'security':
@@ -189,6 +191,8 @@ const CreatorDashboard = (props) => {
                         isDeleteMode={isDeleteMode}
                         onToggleDeleteMode={() => setIsDeleteMode(!isDeleteMode)}
                         onCreateAccount={() => setShowCreateModal(true)}
+                        expandedCards={expandedCards}
+                        onToggleCard={handleToggleCard}
                     />
                 );
         }
@@ -197,13 +201,13 @@ const CreatorDashboard = (props) => {
     const getViewTitle = () => {
         switch (currentView) {
             case 'accounts':
-                return 'Accounts';
+                return 'Cuentas';
             case 'security':
-                return 'Security';
+                return 'Seguridad';
             case 'chatbot':
                 return 'Asistente Chatbot';
             default:
-                return 'Accounts';
+                return 'Cuentas';
         }
     };
 
@@ -220,10 +224,8 @@ const CreatorDashboard = (props) => {
                 {renderView()}
             </DashboardLayout>
 
-            {/* --- NUEVO: Toast --- */}
             <Toast notification={notification} onClose={() => setNotification(null)} />
 
-            {/* Modales */}
             {showAllNotifications && (
                 <NotificationsModal onClose={() => setShowAllNotifications(false)} />
             )}

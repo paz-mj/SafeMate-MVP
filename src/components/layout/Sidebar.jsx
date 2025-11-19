@@ -1,12 +1,13 @@
-// src/components/layout/Sidebar.jsx
+// src/components/layout/Sidebar.jsx - NOMENCLATURA CONSISTENTE
 import { FiShield, FiUsers, FiMessageSquare, FiLogOut, FiHome, FiList } from 'react-icons/fi';
 
 const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) => {
-    // Configuración de navegación según el rol
+    // ✅ CORRECCIÓN: Nombres actualizados para coincidir exactamente
     const navigationConfig = {
         admin: [
             { name: 'Gestión de Cuentas', icon: FiUsers, view: 'admin_accounts' },
             { name: 'Lista Blanca', icon: FiList, view: 'whitelist' },
+            { name: 'Panel de Control', icon: FiHome, view: 'dashboard' }, // ✅ NUEVO
             { name: 'Asistente Chatbot', icon: FiMessageSquare, view: 'chatbot' }
         ],
         empleado: [
@@ -24,7 +25,6 @@ const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) 
     const defaultView = navItems[0].view;
 
     return (
-        // Busca el <aside> y usa estas clases:
         <aside className="w-64 bg-slate-800 dark:bg-slate-950 border-r border-slate-800 dark:border-slate-800 text-white h-screen flex flex-col flex-shrink-0 transition-all duration-300">
             {/* Logo y Marca */}
             <div className="p-6 border-b border-white/10 dark:border-gray-800 flex items-center gap-4">

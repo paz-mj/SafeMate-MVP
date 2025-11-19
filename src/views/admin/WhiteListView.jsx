@@ -96,7 +96,7 @@ const WhitelistView = ({ whitelist, setWhitelist }) => {
 
             <div className="mb-8 flex justify-between items-end">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-light-text dark:text-dark-text mb-2">Gestión de Whitelist</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold text-light-text dark:text-dark-text mb-2">Gestión de Dominios</h1>
                     <p className="text-light-textSecondary dark:text-dark-textSecondary">
                         Agrega enlaces completos, el sistema extraerá el dominio automáticamente.
                     </p>

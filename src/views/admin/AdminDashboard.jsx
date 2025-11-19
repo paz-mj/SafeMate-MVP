@@ -1,44 +1,50 @@
-// src/views/admin/AdminDashboard.jsx - REFACTORIZADO
+// src/views/admin/AdminDashboard.jsx - CON PANEL DE CONTROL
 import { useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import NotificationsModal from '../../views/common/NotificationsModal';
+import NotificationsModal from '../common/NotificationsModal';
 import ChatbotView from '../common/ChatbotView';
 import AdminAccountsView from './AdminAccountsView';
-import WhitelistView from './WhiteListView.jsx';
+import WhitelistView from './WhiteListView';
+import DashboardPanelView from './ControlPanelView.jsx'; // ✅ NUEVO
 
 const AdminDashboard = ({ handleLogout, isDark, toggleDarkMode }) => {
-    // Estado para navegación interna
-    const [currentView, setCurrentView] = useState('admin_accounts');
+    // ✅ CORRECCIÓN: Vista por defecto cambiada a 'dashboard'
+    const [currentView, setCurrentView] = useState('dashboard');
     const [showAllNotifications, setShowAllNotifications] = useState(false);
     const [whitelist, setWhitelist] = useState([
         'mail.google.com',
-        'erp.empresa.cl'
+        'erp.empresa.cl',
+        'drive.google.com'
     ]);
-    // Función para renderizar la vista actual
+
+    // ✅ CORRECCIÓN: Incluye el nuevo Panel de Control
     const renderView = () => {
         switch (currentView) {
+            case 'dashboard':
+                return <DashboardPanelView />;
             case 'admin_accounts':
-                return <AdminAccountsView />;
+                return <AdminAccountsView whitelist={whitelist} />;
             case 'whitelist':
                 return <WhitelistView whitelist={whitelist} setWhitelist={setWhitelist} />;
             case 'chatbot':
                 return <ChatbotView userRole="admin" />;
             default:
-                return <AdminAccountsView />;
+                return <DashboardPanelView />;
         }
     };
 
-    // Función para obtener el título de la vista
     const getViewTitle = () => {
         switch (currentView) {
+            case 'dashboard':
+                return 'Panel de Control';
             case 'admin_accounts':
                 return 'Gestión de Cuentas';
             case 'whitelist':
-                return 'Gestión de Lista Blanca';
+                return 'Lista Blanca';
             case 'chatbot':
                 return 'Asistente Chatbot';
             default:
-                return 'Gestión de Cuentas';
+                return 'Panel de Control';
         }
     };
 
@@ -57,7 +63,6 @@ const AdminDashboard = ({ handleLogout, isDark, toggleDarkMode }) => {
                 {renderView()}
             </DashboardLayout>
 
-            {/* Modal de Notificaciones */}
             {showAllNotifications && (
                 <NotificationsModal onClose={() => setShowAllNotifications(false)} />
             )}

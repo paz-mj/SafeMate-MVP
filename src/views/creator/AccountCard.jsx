@@ -1,4 +1,4 @@
-// src/views/creator/AccountCard.jsx
+// src/views/creator/AccountCard.jsx - VERSIÓN CORREGIDA
 import { useState } from 'react';
 import {
     FiChevronDown,
@@ -16,8 +16,8 @@ import {
 } from 'react-icons/fi';
 import { compromisedPasswords } from '../../data/fakeData';
 
-const AccountCard = ({ account, onUpdate, onDelete, isDeleteMode }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+const AccountCard = ({ account, onUpdate, onDelete, isDeleteMode, isExpanded, onToggleExpand }) => {
+    // ✅ CORRECCIÓN: Estados locales (excepto isExpanded que ahora viene por props)
     const [showPassword, setShowPassword] = useState(false);
     const [copiedPassword, setCopiedPassword] = useState(false);
     const [verificationResult, setVerificationResult] = useState(null);
@@ -25,7 +25,6 @@ const AccountCard = ({ account, onUpdate, onDelete, isDeleteMode }) => {
 
     const Icon = account.icon;
 
-    // ✅ Copiar contraseña
     const handleCopyPassword = async () => {
         try {
             await navigator.clipboard.writeText(account.password);
@@ -36,7 +35,6 @@ const AccountCard = ({ account, onUpdate, onDelete, isDeleteMode }) => {
         }
     };
 
-    // ✅ Verificar si la contraseña está comprometida
     const handleVerifyPassword = () => {
         setIsVerifying(true);
 
@@ -54,7 +52,6 @@ const AccountCard = ({ account, onUpdate, onDelete, isDeleteMode }) => {
         }, 800);
     };
 
-    // ✅ Íconos de estado
     const getStatusDisplay = () => {
         const statusConfig = {
             green: { Icon: FiCheckCircle, text: 'Secure', color: 'text-alert-green' },
@@ -74,7 +71,7 @@ const AccountCard = ({ account, onUpdate, onDelete, isDeleteMode }) => {
 
     return (
         <div className="bg-light-surface dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-all duration-300">
-            {/* Header - Siempre visible */}
+            {/* Header */}
             <div className="p-5">
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-4">
@@ -90,7 +87,6 @@ const AccountCard = ({ account, onUpdate, onDelete, isDeleteMode }) => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {/* Botón Eliminar (solo en modo delete) */}
                         {isDeleteMode && (
                             <button
                                 onClick={() => onDelete(account.id)}
@@ -101,9 +97,9 @@ const AccountCard = ({ account, onUpdate, onDelete, isDeleteMode }) => {
                             </button>
                         )}
 
-                        {/* Botón Expandir/Contraer */}
+                        {/* ✅ CORRECCIÓN: onClick ahora llama a onToggleExpand con el ID */}
                         <button
-                            onClick={() => setIsExpanded(!isExpanded)}
+                            onClick={() => onToggleExpand(account.id)}
                             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
                             {isExpanded ? (
@@ -116,7 +112,7 @@ const AccountCard = ({ account, onUpdate, onDelete, isDeleteMode }) => {
                 </div>
             </div>
 
-            {/* Contenido expandible - ACCORDION */}
+            {/* Contenido expandible */}
             <div className={`transition-all duration-300 ease-in-out ${
                 isExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
             } overflow-hidden`}>

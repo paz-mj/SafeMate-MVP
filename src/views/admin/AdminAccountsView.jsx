@@ -1,22 +1,23 @@
-// src/views/admin/AdminAccountsView.jsx
+// src/views/admin/AdminAccountsView.jsx - VERSIÓN CORREGIDA
 import { useState } from 'react';
 import {
     FiPlus,
     FiUser,
     FiEye,
+    FiEyeOff, // ✅ AGREGADO: Import faltante
     FiFileText,
     FiTrash2,
     FiX,
     FiEdit,
     FiCopy,
     FiSearch,
+    FiCheck,
 } from 'react-icons/fi';
 import { fakeUsers, fakeLogs, compromisedPasswords } from '../../data/fakeData.js';
 import PasswordGeneratorModal from '../../components/PasswordGeneratorModal.jsx';
 import Toast from '../common/Toast.jsx';
 
 const AdminAccountsView = ({ whitelist = [] }) => {
-    // Estados principales
     const [users, setUsers] = useState(fakeUsers);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(null);
@@ -25,8 +26,9 @@ const AdminAccountsView = ({ whitelist = [] }) => {
     const [showPasswordGenerator, setShowPasswordGenerator] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [notification, setNotification] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [copiedPassword, setCopiedPassword] = useState(false);
 
-    // Estado para el formulario
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -101,18 +103,9 @@ const AdminAccountsView = ({ whitelist = [] }) => {
         setShowCreateModal(true);
     };
 
-    // Gestión de contraseñas
-    const [showPassword, setShowPassword] = useState(false);
-    const [copiedPassword, setCopiedPassword] = useState(false);
-
     const handleCopyPassword = async (password) => {
         try {
-            const textArea = document.createElement('textarea');
-            textArea.value = password;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
+            await navigator.clipboard.writeText(password);
             setCopiedPassword(true);
             setTimeout(() => setCopiedPassword(false), 2000);
             setNotification({ type: 'success', message: 'Contraseña copiada' });
@@ -178,7 +171,7 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                 )}
             </div>
 
-            {/* --- VISTA MÓVIL: CARDS (Visible solo en móvil) --- */}
+            {/* Vista Móvil: Cards */}
             <div className="grid grid-cols-1 gap-4 md:hidden">
                 {users.map((user) => {
                     const statusInfo = getStatusIcon(user.status);
@@ -213,7 +206,7 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                 })}
             </div>
 
-            {/* --- VISTA ESCRITORIO: TABLA (Oculta en móvil) --- */}
+            {/* Vista Escritorio: Tabla */}
             <div className="hidden md:block bg-light-surface dark:bg-dark-surface rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -252,58 +245,133 @@ const AdminAccountsView = ({ whitelist = [] }) => {
                 </table>
             </div>
 
-            {/* Modales (Iguales, solo asegurando responsive en Logs) */}
-            {/* ... Mantengo la estructura de los modales igual que antes pero omito código repetitivo si no cambia la lógica ... */}
-            {/* Modal Crear/Editar */}
+            {/* Modal Crear/Editar Usuario */}
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowCreateModal(false)}>
                     <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between mb-4"><h3 className="text-xl font-bold text-light-text dark:text-dark-text">{editingUser ? 'Editar' : 'Crear'} Usuario</h3><button onClick={() => setShowCreateModal(false)}><FiX className="w-5 h-5 text-gray-500" /></button></div>
+                        <div className="flex justify-between mb-4">
+                            <h3 className="text-xl font-bold text-light-text dark:text-dark-text">{editingUser ? 'Editar' : 'Crear'} Usuario</h3>
+                            <button onClick={() => setShowCreateModal(false)}><FiX className="w-5 h-5 text-gray-500" /></button>
+                        </div>
                         <form onSubmit={handleCreateUser} className="space-y-4">
                             <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Nombre" className="w-full p-2 border rounded dark:bg-dark-background dark:border-gray-600 dark:text-white" required />
                             <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="Email" className="w-full p-2 border rounded dark:bg-dark-background dark:border-gray-600 dark:text-white" required />
                             <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="w-full p-2 border rounded dark:bg-dark-background dark:border-gray-600 dark:text-white"><option>Finanzas</option><option>Ventas</option><option>Administrador</option></select>
-                            <div className="flex gap-2"><input type="text" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder="Contraseña" className="flex-1 p-2 border rounded dark:bg-dark-background dark:border-gray-600 dark:text-white" /><button type="button" onClick={() => setShowPasswordGenerator(true)} className="p-2 bg-gray-100 dark:bg-gray-700 rounded">Generar</button></div>
-                            <div className="flex justify-end gap-2"><button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-gray-500">Cancelar</button><button type="submit" className="px-4 py-2 bg-brand text-white rounded">Guardar</button></div>
+                            <div className="flex gap-2">
+                                <input type="text" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder="Contraseña" className="flex-1 p-2 border rounded dark:bg-dark-background dark:border-gray-600 dark:text-white" />
+                                <button type="button" onClick={() => setShowPasswordGenerator(true)} className="p-2 bg-gray-100 dark:bg-gray-700 rounded">Generar</button>
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-gray-500">Cancelar</button>
+                                <button type="submit" className="px-4 py-2 bg-brand text-white rounded">Guardar</button>
+                            </div>
                         </form>
                     </div>
                 </div>
             )}
 
-            {/* Modal Password */}
+            {/* ✅ CORREGIDO: Modal de Contraseña con FiEyeOff importado */}
             {showPasswordModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowPasswordModal(null)}>
                     <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between mb-4"><h3 className="text-xl font-bold text-light-text dark:text-dark-text">Contraseña</h3><button onClick={() => setShowPasswordModal(null)}><FiX className="w-5 h-5 text-gray-500" /></button></div>
-                        <div className="relative mb-4"><input type={showPassword ? "text" : "password"} value={showPasswordModal.password} readOnly className="w-full p-2 pr-20 border rounded dark:bg-dark-background dark:border-gray-600 dark:text-white" /><button onClick={() => handleCopyPassword(showPasswordModal.password)} className="absolute right-10 top-2 text-gray-500"><FiCopy /></button><button onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-2 text-gray-500">{showPassword ? <FiEyeOff /> : <FiEye />}</button></div>
-                        <button onClick={() => setShowPasswordGenerator(true)} className="w-full py-2 bg-brand text-white rounded">Generar Nueva</button>
+                        <div className="flex justify-between mb-4">
+                            <h3 className="text-xl font-bold text-light-text dark:text-dark-text">Contraseña de {showPasswordModal.name}</h3>
+                            <button onClick={() => setShowPasswordModal(null)}><FiX className="w-5 h-5 text-gray-500" /></button>
+                        </div>
+                        <div className="relative mb-4">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={showPasswordModal.password}
+                                readOnly
+                                className="w-full p-3 pr-24 border rounded-lg dark:bg-dark-background dark:border-gray-600 dark:text-white font-mono"
+                            />
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                                <button
+                                    onClick={() => handleCopyPassword(showPasswordModal.password)}
+                                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    title="Copiar contraseña"
+                                >
+                                    {copiedPassword ? (
+                                        <FiCheck className="w-4 h-4 text-alert-green" />
+                                    ) : (
+                                        <FiCopy className="w-4 h-4 text-gray-500" />
+                                    )}
+                                </button>
+                                <button
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    title={showPassword ? "Ocultar" : "Mostrar"}
+                                >
+                                    {showPassword ? (
+                                        <FiEyeOff className="w-4 h-4 text-gray-500" />
+                                    ) : (
+                                        <FiEye className="w-4 h-4 text-gray-500" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                        <button onClick={() => setShowPasswordGenerator(true)} className="w-full py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors">
+                            Generar Nueva Contraseña
+                        </button>
                     </div>
                 </div>
             )}
 
-            {/* Modal Logs (Responsive) */}
+            {/* Modal de Logs */}
             {showLogsModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowLogsModal(false)}>
                     <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b dark:border-gray-700 flex justify-between"><h3 className="text-xl font-bold text-light-text dark:text-dark-text">Logs de Actividad</h3><button onClick={() => setShowLogsModal(false)}><FiX /></button></div>
+                        <div className="p-6 border-b dark:border-gray-700 flex justify-between">
+                            <h3 className="text-xl font-bold text-light-text dark:text-dark-text">Logs de Actividad</h3>
+                            <button onClick={() => setShowLogsModal(false)}><FiX className="w-5 h-5 text-gray-500" /></button>
+                        </div>
                         <div className="p-6 overflow-y-auto flex-1 space-y-3">
                             {fakeLogs.map(log => {
                                 const info = getLogStatusInfo(log);
                                 return (
                                     <div key={log.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded">
-                                        <div className="flex items-center gap-3 overflow-hidden"><span className="text-xl flex-shrink-0">{info.icon}</span><div className="min-w-0"><p className="font-medium truncate text-light-text dark:text-dark-text">{log.site}</p><p className="text-xs text-gray-500">{log.time}</p></div></div>
+                                        <div className="flex items-center gap-3 overflow-hidden">
+                                            <span className="text-xl flex-shrink-0">{info.icon}</span>
+                                            <div className="min-w-0">
+                                                <p className="font-medium truncate text-light-text dark:text-dark-text">{log.site}</p>
+                                                <p className="text-xs text-gray-500">{log.time}</p>
+                                            </div>
+                                        </div>
                                         <span className={`text-xs px-2 py-1 rounded-full ${info.bg} ${info.color}`}>{info.text}</span>
                                     </div>
                                 );
                             })}
                         </div>
-                        <div className="p-6 border-t dark:border-gray-700 flex justify-end"><button onClick={() => setShowLogsModal(false)} className="px-4 py-2 bg-brand text-white rounded">Cerrar</button></div>
+                        <div className="p-6 border-t dark:border-gray-700 flex justify-end">
+                            <button onClick={() => setShowLogsModal(false)} className="px-4 py-2 bg-brand text-white rounded">Cerrar</button>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {showPasswordGenerator && <PasswordGeneratorModal onClose={() => setShowPasswordGenerator(false)} onPasswordGenerated={handlePasswordGenerated} />}
-            {showDeleteModal && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div className="bg-white dark:bg-dark-surface p-6 rounded-lg max-w-sm w-full text-center"><FiTrash2 className="w-12 h-12 text-red-500 mx-auto mb-4" /><h3 className="text-lg font-bold mb-2 text-light-text dark:text-dark-text">¿Eliminar Usuario?</h3><div className="flex gap-2 justify-center"><button onClick={() => setShowDeleteModal(null)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded">Cancelar</button><button onClick={() => handleDeleteUser(showDeleteModal)} className="px-4 py-2 bg-red-500 text-white rounded">Eliminar</button></div></div></div>}
+            {/* Modal de Confirmación de Eliminación */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-dark-surface p-6 rounded-lg max-w-sm w-full text-center">
+                        <FiTrash2 className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                        <h3 className="text-lg font-bold mb-2 text-light-text dark:text-dark-text">¿Eliminar Usuario?</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-4">Esta acción no se puede deshacer</p>
+                        <div className="flex gap-2 justify-center">
+                            <button onClick={() => setShowDeleteModal(null)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded">Cancelar</button>
+                            <button onClick={() => handleDeleteUser(showDeleteModal)} className="px-4 py-2 bg-red-500 text-white rounded">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Generador de Contraseñas */}
+            {showPasswordGenerator && (
+                <PasswordGeneratorModal
+                    onClose={() => setShowPasswordGenerator(false)}
+                    onPasswordGenerated={handlePasswordGenerated}
+                />
+            )}
+
             <Toast notification={notification} onClose={() => setNotification(null)} />
         </div>
     );
