@@ -1,4 +1,4 @@
-// src/views/creator/CreatorDashboard.jsx - VERSIÓN CORREGIDA
+// src/views/creator/CreatorDashboard.jsx - VERSIÓN CORREGIDA Y ACTUALIZADA
 import { useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import NotificationsModal from '../common/NotificationsModal';
@@ -7,9 +7,10 @@ import PasswordGeneratorModal from '../../components/PasswordGeneratorModal';
 import AccountCard from './AccountCard';
 import CreateAccountModal from './CreateAccountModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import BrandProtectionView from './BrandProteccionView.jsx'; // ✅ NUEVO
+import SecureVaultView from './SecureVaultView'; // ✅ NUEVO
 import { fakeCreatorAccounts } from '../../data/fakeCreatorData';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
-import VerifyPasswordView from '../common/VerifyPasswordView';
 import Toast from '../common/Toast';
 
 const AccountsView = ({
@@ -99,16 +100,12 @@ const CreatorDashboard = (props) => {
     const [accounts, setAccounts] = useState(fakeCreatorAccounts);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [notification, setNotification] = useState(null);
-
-    // ✅ CORRECCIÓN: Estado para manejar tarjetas expandidas individualmente
     const [expandedCards, setExpandedCards] = useState([]);
-
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showPasswordGenerator, setShowPasswordGenerator] = useState(false);
     const [selectedAccountId, setSelectedAccountId] = useState(null);
     const [accountToDelete, setAccountToDelete] = useState(null);
 
-    // ✅ CORRECCIÓN: Función para toggle individual de tarjetas
     const handleToggleCard = (accountId) => {
         setExpandedCards(prev =>
             prev.includes(accountId)
@@ -133,7 +130,6 @@ const CreatorDashboard = (props) => {
 
     const confirmDelete = () => {
         setAccounts(accounts.filter(a => a.id !== accountToDelete.id));
-        // También remover de tarjetas expandidas
         setExpandedCards(prev => prev.filter(id => id !== accountToDelete.id));
         setNotification({
             type: 'success',
@@ -163,6 +159,7 @@ const CreatorDashboard = (props) => {
         setSelectedAccountId(null);
     };
 
+    // ✅ CORRECCIÓN: Switch actualizado con nuevas vistas
     const renderView = () => {
         switch (currentView) {
             case 'accounts':
@@ -178,8 +175,10 @@ const CreatorDashboard = (props) => {
                         onToggleCard={handleToggleCard}
                     />
                 );
-            case 'security':
-                return <VerifyPasswordView />;
+            case 'brand_protection': // ✅ NUEVO
+                return <BrandProtectionView />;
+            case 'vault': // ✅ NUEVO
+                return <SecureVaultView />;
             case 'chatbot':
                 return <ChatbotView />;
             default:
@@ -198,12 +197,15 @@ const CreatorDashboard = (props) => {
         }
     };
 
+    // ✅ CORRECCIÓN: Títulos actualizados
     const getViewTitle = () => {
         switch (currentView) {
             case 'accounts':
                 return 'Cuentas';
-            case 'security':
-                return 'Seguridad';
+            case 'brand_protection':
+                return 'Protección de Marca';
+            case 'vault':
+                return 'Bóveda Segura';
             case 'chatbot':
                 return 'Asistente Chatbot';
             default:

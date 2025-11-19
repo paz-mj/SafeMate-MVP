@@ -1,13 +1,13 @@
-// src/components/layout/Sidebar.jsx - NOMENCLATURA CONSISTENTE
-import { FiShield, FiUsers, FiMessageSquare, FiLogOut, FiHome, FiList } from 'react-icons/fi';
+// src/components/layout/Sidebar.jsx - ACTUALIZADO
+import { FiShield, FiUsers, FiMessageSquare, FiLogOut, FiHome, FiList, FiLock } from 'react-icons/fi';
 
 const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) => {
-    // ✅ CORRECCIÓN: Nombres actualizados para coincidir exactamente
+    // ✅ CORRECCIÓN: Navegación actualizada para Creator (sin 'security')
     const navigationConfig = {
         admin: [
             { name: 'Gestión de Cuentas', icon: FiUsers, view: 'admin_accounts' },
             { name: 'Lista Blanca', icon: FiList, view: 'whitelist' },
-            { name: 'Panel de Control', icon: FiHome, view: 'dashboard' }, // ✅ NUEVO
+            { name: 'Panel de Control', icon: FiHome, view: 'dashboard' },
             { name: 'Asistente Chatbot', icon: FiMessageSquare, view: 'chatbot' }
         ],
         empleado: [
@@ -16,7 +16,8 @@ const Sidebar = ({ handleLogout, userRole = 'admin', currentView, onNavigate }) 
         ],
         creator: [
             { name: 'Cuentas', icon: FiHome, view: 'accounts' },
-            { name: 'Seguridad', icon: FiShield, view: 'security' },
+            { name: 'Protección de Marca', icon: FiShield, view: 'brand_protection' }, // ✅ NUEVO
+            { name: 'Bóveda Segura', icon: FiLock, view: 'vault' }, // ✅ NUEVO
             { name: 'Asistente Chatbot', icon: FiMessageSquare, view: 'chatbot' }
         ]
     };
