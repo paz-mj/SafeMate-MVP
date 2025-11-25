@@ -1,15 +1,17 @@
 // src/App.jsx
 import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'; // Importamos el Router
 import Login from './views/common/Login.jsx';
 import AdminDashboard from './views/admin/AdminDashboard.jsx';
 import EmpleadoDashboard from './views/empleado/EmpleadoDashboard.jsx';
 import CreatorDashboard from './views/creator/CreatorDashboard.jsx';
+import LandingBeta from './views/LandingBeta.jsx'; // Importamos la Landing
 
-function App() {
-    const [userRole, setUserRole] = useState(null); // null | 'admin' | 'empleado' | 'creator'
-    const [isDark, setIsDark] = useState(true); // true = dark mode por defecto
+// Componente que contiene tu lógica original de la App
+const MainApp = () => {
+    const [userRole, setUserRole] = useState(null);
+    const [isDark, setIsDark] = useState(true);
 
-    // Aplicar clase dark/light al body
     useEffect(() => {
         const body = document.body;
         if (isDark) {
@@ -21,51 +23,43 @@ function App() {
         }
     }, [isDark]);
 
-    // Función para hacer login
-    const handleLogin = (role) => {
-        setUserRole(role);
-    };
+    const handleLogin = (role) => setUserRole(role);
+    const handleLogout = () => setUserRole(null);
+    const toggleDarkMode = () => setIsDark(prev => !prev);
 
-    // Función para hacer logout
-    const handleLogout = () => {
-        setUserRole(null);
-    };
-
-    // Toggle dark mode
-    const toggleDarkMode = () => {
-        setIsDark(prev => !prev);
-    };
-
-    // Si no hay usuario logueado, mostrar Login
     if (!userRole) {
         return <Login onLogin={handleLogin} />;
     }
 
-    // Renderizar el Dashboard correspondiente según el rol
     return (
         <>
             {userRole === 'admin' && (
-                <AdminDashboard
-                    handleLogout={handleLogout}
-                    isDark={isDark}
-                    toggleDarkMode={toggleDarkMode}
-                />
+                <AdminDashboard handleLogout={handleLogout} isDark={isDark} toggleDarkMode={toggleDarkMode} />
             )}
             {userRole === 'empleado' && (
-                <EmpleadoDashboard
-                    handleLogout={handleLogout}
-                    isDark={isDark}
-                    toggleDarkMode={toggleDarkMode}
-                />
+                <EmpleadoDashboard handleLogout={handleLogout} isDark={isDark} toggleDarkMode={toggleDarkMode} />
             )}
             {userRole === 'creator' && (
-                <CreatorDashboard
-                    handleLogout={handleLogout}
-                    isDark={isDark}
-                    toggleDarkMode={toggleDarkMode}
-                />
+                <CreatorDashboard handleLogout={handleLogout} isDark={isDark} toggleDarkMode={toggleDarkMode} />
             )}
         </>
+    );
+};
+
+function App() {
+    return (
+        <BrowserRouter>
+            <Routes>
+                {/* Ruta para la Landing Page (lo que escanearán en el QR) */}
+                <Route path="/beta" element={<LandingBeta />} />
+
+                {/* Ruta Principal (tu App normal) */}
+                <Route path="/" element={<MainApp />} />
+
+                {/* Cualquier otra ruta redirige al inicio */}
+                <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+        </BrowserRouter>
     );
 }
 
